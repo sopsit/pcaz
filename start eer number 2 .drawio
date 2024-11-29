@@ -1019,9 +1019,6 @@
         <mxCell id="bVZJfdDWH6dIzrh-P4Qh-1" value="" style="shape=requiredInterface;html=1;verticalLabelPosition=bottom;sketch=0;rotation=90;" parent="1" vertex="1">
           <mxGeometry x="2428.9999999999995" y="-571" width="22.99" height="34.87" as="geometry" />
         </mxCell>
-        <mxCell id="bVZJfdDWH6dIzrh-P4Qh-5" value="m" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=18;" parent="1" vertex="1">
-          <mxGeometry x="2389" y="-991" width="40" height="40" as="geometry" />
-        </mxCell>
         <mxCell id="bVZJfdDWH6dIzrh-P4Qh-11" value="n" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="2125" y="-82" width="30" height="30" as="geometry" />
         </mxCell>
