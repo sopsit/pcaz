@@ -3,12 +3,12 @@ CREATE DATABASE peysaz;
 USE peysaz;
 
 CREATE TABLE clients 
-             ( id         INT       PRIMARY KEY			AUTO_INCREMENT ,
+             ( id         			INT       PRIMARY KEY			AUTO_INCREMENT ,
                Phone_number         CHAR(11)            NOT NULL       UNIQUE ,
                First_name           VARCHAR(30)         NOT NULL       ,
                Last_name            VARCHAR(30)         NOT NULL       ,
                Wallet_balance       INT                 NOT NULL      DEFAULT 0  CHECK(Wallet_balance >= 0),
-               C_time                DATETIME           NOT NULL      DEFAULT CURRENT_TIMESTAMP ,
+               C_time               DATETIME            NOT NULL      DEFAULT CURRENT_TIMESTAMP ,
                Referral_code        VARCHAR(20)         NOT NULL      UNIQUE );
 
 CREATE TABLE address
@@ -105,13 +105,13 @@ CREATE TABLE Public_Code
 			  FOREIGN KEY(Public_DCode) REFERENCES Discount_Code(Dis_Code) ON UPDATE CASCADE	ON DELETE CASCADE );
               
 CREATE TABLE  Product 
-              ( id         INT            PRIMARY KEY   AUTO_INCREMENT , 
-                Category  VARCHAR(20)     NOT NULL   ,
-                Image     BLOB ,
-                Current_price   INT      NOT NULL    CHECK ( Current_price > 0 ) ,
-                Stock_count     INT      NOT NULL    CHECK(Stock_count >= 0 ) ,
-                Brand           VARCHAR(30)    NOT NULL  ,
-                Model           VARCHAR(30)    NOT NULL );
+              ( id         			INT            PRIMARY KEY   AUTO_INCREMENT , 
+                Category  			VARCHAR(20)     NOT NULL   ,
+                Image     			BLOB ,
+                Current_price   	INT      NOT NULL    CHECK ( Current_price > 0 ) ,
+                Stock_count     	INT      NOT NULL    CHECK(Stock_count >= 0 ) ,
+                Brand           	VARCHAR(30)    NOT NULL  ,
+                Model           	VARCHAR(30)    NOT NULL );
 
 CREATE TABLE  Added_To 
                ( id       INT ,
@@ -134,6 +134,147 @@ CREATE TABLE Applied_To
 			 FOREIGN KEY(id , Cart_number , Locked_number ) REFERENCES Locked_Shopping_Cart(id , Cart_Number , Locked_Cart_Number ) ON UPDATE CASCADE ON DELETE CASCADE,
              FOREIGN KEY(ACode) REFERENCES Discount_Code(Dis_Code) ON UPDATE CASCADE ON DELETE RESTRICT );
                
+CREATE TABLE Case_p
+			 ( id			INT , 
+             Number_of_fans INT, 
+             Fan_size		INT,
+             Wattage		INT,
+             CASE_Type 		VARCHAR(15),
+             Material		VARCHAR(15),
+             Color			VARCHAR(15),
+             Height			INT,
+             Width			INT,
+             Depth			INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
+             
+CREATE TABLE HDD
+			 ( id			INT , 
+             Rotational_speed INT, 
+             Capacity		INT,
+             Wattage		INT,
+             Height			INT,
+             Width			INT,
+             Depth			INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
+             
+CREATE TABLE POWER_SUPPLY
+			 ( id			INT , 
+             Supported_wattage INT, 
+             Height			INT,
+             Width			INT,
+             Depth			INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
+             
+CREATE TABLE GPU
+			 ( id			INT , 
+             Clock_speed    INT, 
+             Ram_size		INT,
+             Wattage		INT,
+             Number_of_fans	INT,
+             Height			INT,
+             Width			INT,
+             Depth			INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);  
+CREATE TABLE SSD
+			 ( id			INT , 
+             Wattage		INT,
+             Capacity		INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
+             
+CREATE TABLE RAM_STICK
+			 ( id			INT , 
+             Frequency      INT, 
+             Generation		VARCHAR(10),
+             Capacity		INT,
+             Wattage		INT,
+             Height			INT,
+             Width			INT,
+             Depth			INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
+             
+CREATE TABLE MOTHERBOARD
+			 ( id			INT , 
+             Number_of_memory_slots      INT, 
+             Memory_speed_range		VARCHAR(10),
+             Chipset		INT,
+             Wattage		INT,
+             Height			INT,
+             Width			INT,
+             Depth			INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
+             
+CREATE TABLE CPU_P
+			 ( id									INT , 
+             Maximum_addressable_memory_limit       INT, 
+             Boost_frequency						INT,
+             Base_frequency							INT,
+             Number_of_cores						INT,
+             Number_of_Threads						INT,
+             Wattage								INT,
+             Generation								VARCHAR(15),
+             Microarchitecture						INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
+             
+CREATE TABLE COOLER
+			 ( id							INT , 
+             Maximum_rotational_speed       INT, 
+             Fan_size						INT,
+             Height							INT,
+             Width							INT,
+             Wattage						INT,
+             Cooling_method					VARCHAR(15),
+             Depth							INT,
+             PRIMARY KEY (id), 
+             FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
+
+CREATE TABLE CC_SOCKET_COMPATIBLE_WITH
+			 ( Cooler_ID	 INT , 
+				CPU_ID       INT, 
+             PRIMARY KEY (Cooler_ID, CPU_ID), 
+             FOREIGN KEY(Cooler_ID ) REFERENCES COOLER(id) ON UPDATE CASCADE ON DELETE CASCADE,
+             FOREIGN KEY(CPU_ID ) REFERENCES CPU_P(id) ON UPDATE CASCADE ON DELETE CASCADE);
+             
+CREATE TABLE MC_SOCKET_COMPATIBLE_WITH
+			 (  CPU_ID	 			INT , 
+				Motherboard_ID       INT, 
+				PRIMARY KEY (Motherboard_ID, CPU_ID), 
+				FOREIGN KEY(CPU_ID ) REFERENCES CPU_P(id) ON UPDATE CASCADE ON DELETE CASCADE,
+				FOREIGN KEY(Motherboard_ID ) REFERENCES MOTHERBOARD(id) ON UPDATE CASCADE ON DELETE CASCADE);
                 
+CREATE TABLE RM_SLOT_COMPATIBLE_WITH
+			 (  Ram_ID	 			INT , 
+				Motherboard_ID       INT, 
+				PRIMARY KEY (Motherboard_ID, Ram_ID), 
+				FOREIGN KEY(Ram_ID ) REFERENCES CPU_ID(id) ON UPDATE CASCADE ON DELETE CASCADE,
+				FOREIGN KEY(Motherboard_ID ) REFERENCES MOTHERBOARD(id) ON UPDATE CASCADE ON DELETE CASCADE);
                 
+CREATE TABLE GM_SLOT_COMPATIBLE_WITH
+			 (  GPU_ID	 			INT , 
+				Motherboard_ID       INT, 
+				PRIMARY KEY (Motherboard_ID, GPU_ID), 
+				FOREIGN KEY(GPU_ID ) REFERENCES GPU(id) ON UPDATE CASCADE ON DELETE CASCADE,
+				FOREIGN KEY(Motherboard_ID ) REFERENCES MOTHERBOARD(id) ON UPDATE CASCADE ON DELETE CASCADE);
+                
+CREATE TABLE SM_SLOT_COMPATIBLE_WITH
+			 (  SSD_ID	 			INT , 
+				Motherboard_ID       INT, 
+				PRIMARY KEY (Motherboard_ID, SSD_ID), 
+				FOREIGN KEY(SSD_ID ) REFERENCES SSD(id) ON UPDATE CASCADE ON DELETE CASCADE,
+				FOREIGN KEY(Motherboard_ID ) REFERENCES MOTHERBOARD(id) ON UPDATE CASCADE ON DELETE CASCADE);
+                
+CREATE TABLE CONNECTOR_COMPATIBLE_WITH
+			 (  GPU_ID	 			INT , 
+				Power_ID       INT, 
+				PRIMARY KEY (Power_ID, GPU_ID), 
+				FOREIGN KEY(GPU_ID ) REFERENCES GPU(id) ON UPDATE CASCADE ON DELETE CASCADE,
+				FOREIGN KEY(Power_ID ) REFERENCES POWER_SUPPLY(id) ON UPDATE CASCADE ON DELETE CASCADE);
+
                               
