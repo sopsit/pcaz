@@ -135,49 +135,45 @@ CREATE TABLE Applied_To
              FOREIGN KEY(ACode) REFERENCES Discount_Code(Dis_Code) ON UPDATE CASCADE ON DELETE RESTRICT );
                
 CREATE TABLE Case_p
-			 ( id			INT , 
+			 ( id			INT  PRIMARY KEY, 
              Number_of_fans INT, 
              Fan_size		INT,
-             Wattage		INT,
+             Wattage		FLOAT,
              CASE_Type 		VARCHAR(15),
              Material		VARCHAR(15),
              Color			VARCHAR(15),
              Height			INT,
              Width			INT,
              Depth			INT,
-             PRIMARY KEY (id), 
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
              
 CREATE TABLE HDD
-			 ( id			INT , 
+			 ( id			INT  PRIMARY KEY , 
              Rotational_speed INT, 
              Capacity		INT,
-             Wattage		INT,
+             Wattage		FLOAT,
              Height			INT,
              Width			INT,
              Depth			INT,
-             PRIMARY KEY (id), 
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
              
 CREATE TABLE POWER_SUPPLY
-			 ( id			INT , 
+			 ( id			INT  PRIMARY KEY, 
              Supported_wattage INT, 
              Height			INT,
              Width			INT,
              Depth			INT,
-             PRIMARY KEY (id), 
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
              
 CREATE TABLE GPU
-			 ( id			INT , 
+			 ( id			INT  PRIMARY KEY , 
              Clock_speed    INT, 
              Ram_size		INT,
-             Wattage		INT,
+             Wattage		FLOAT,
              Number_of_fans	INT,
              Height			INT,
              Width			INT,
              Depth			INT,
-             PRIMARY KEY (id), 
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);  
 CREATE TABLE SSD
 			 ( id			INT , 
@@ -187,52 +183,48 @@ CREATE TABLE SSD
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
              
 CREATE TABLE RAM_STICK
-			 ( id			INT , 
+			 ( id			INT  PRIMARY KEY, 
              Frequency      INT, 
              Generation		VARCHAR(10),
              Capacity		INT,
-             Wattage		INT,
+             Wattage		FLOAT,
              Height			INT,
              Width			INT,
              Depth			INT,
-             PRIMARY KEY (id), 
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
              
 CREATE TABLE MOTHERBOARD
-			 ( id			INT , 
+			 ( id			INT PRIMARY KEY, 
              Number_of_memory_slots      INT, 
              Memory_speed_range		VARCHAR(10),
              Chipset		INT,
-             Wattage		INT,
+             Wattage		FLOAT,
              Height			INT,
              Width			INT,
              Depth			INT,
-             PRIMARY KEY (id), 
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
              
 CREATE TABLE CPU_P
-			 ( id									INT , 
+			 ( id									INT  PRIMARY KEY, 
              Maximum_addressable_memory_limit       INT, 
              Boost_frequency						INT,
              Base_frequency							INT,
              Number_of_cores						INT,
              Number_of_Threads						INT,
-             Wattage								INT,
+             Wattage								FLOAT,
              Generation								VARCHAR(15),
              Microarchitecture						INT,
-             PRIMARY KEY (id), 
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
              
 CREATE TABLE COOLER
-			 ( id							INT , 
+			 ( id							INT  PRIMARY KEY, 
              Maximum_rotational_speed       INT, 
              Fan_size						INT,
              Height							INT,
              Width							INT,
-             Wattage						INT,
+             Wattage						FLOAT,
              Cooling_method					VARCHAR(15),
              Depth							INT,
-             PRIMARY KEY (id), 
              FOREIGN KEY(id ) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE);
 
 CREATE TABLE CC_SOCKET_COMPATIBLE_WITH
@@ -253,7 +245,7 @@ CREATE TABLE RM_SLOT_COMPATIBLE_WITH
 			 (  Ram_ID	 			INT , 
 				Motherboard_ID       INT, 
 				PRIMARY KEY (Motherboard_ID, Ram_ID), 
-				FOREIGN KEY(Ram_ID ) REFERENCES CPU_ID(id) ON UPDATE CASCADE ON DELETE CASCADE,
+				FOREIGN KEY(Ram_ID ) REFERENCES CPU_P(id) ON UPDATE CASCADE ON DELETE CASCADE,
 				FOREIGN KEY(Motherboard_ID ) REFERENCES MOTHERBOARD(id) ON UPDATE CASCADE ON DELETE CASCADE);
                 
 CREATE TABLE GM_SLOT_COMPATIBLE_WITH
