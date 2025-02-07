@@ -346,6 +346,43 @@ BEGIN
     END WHILE;
     
 END//
+
+CREATE TRIGGER Check_inventory  BEFORE INSERT ON Added_To  FOR EACH ROW
+BEGIN
+       DECLARE StockCount INT;
+       
+       SELECT Stock_count INTO StockCount FROM Product WHERE id = NEW.Aid ;
+       
+       IF ( StockCount < 0 ) THEN
+           	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'This product is not available';
+	 END IF;
+END//
+
+CREATE TRIGGER Product_Stock_Decrease  AFTER INSERT ON Added_To  FOR EACH ROW
+BEGIN
+		UPDATE Product
+        SET Stock_count = Stock_count - 1
+		WHERE id = NEW.Aid ;
+END//
+
+CREATE TRIGGER check_and_update_date BEFORE INSERT ON VIP_Clients FOR EACH ROW
+BEGIN
+    IF EXISTS (SELECT id FROM VIP_Clients WHERE id = NEW.id) THEN
+        UPDATE VIP_Clients
+        SET Subscription_expiration_time = CURDATE()
+        WHERE id = NEW.id;
+    ELSE
+        SET NEW.Subscription_expiration_time = CURDATE();
+    END IF;
+END//
+
+
+
+
+
+
+
           
 
 
