@@ -26,8 +26,8 @@ CREATE TABLE VIP_Clients
 CREATE TABLE refers 
              ( Referee      INT        PRIMARY KEY ,
 			   Referrer     INT        NOT NULL    ,
-               FOREIGN KEY(Referee)	 REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE RESTRICT ,
-               FOREIGN KEY(Referrer) REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE RESTRICT );
+               FOREIGN KEY(Referee)	 REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE ,
+               FOREIGN KEY(Referrer) REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE );
 
 CREATE TABLE  Shopping_Cart 
                ( id           INT ,
@@ -37,7 +37,7 @@ CREATE TABLE  Shopping_Cart
                                       'locked' )         NOT NULL  DEFAULT 'free'  ,
 		     
                    PRIMARY KEY ( id ,  Cart_Number ) ,
-                   FOREIGN KEY(id) REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE RESTRICT );
+                   FOREIGN KEY(id) REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE );
                    
 CREATE TABLE Locked_Shopping_Cart 
 			( id           INT ,
@@ -45,7 +45,7 @@ CREATE TABLE Locked_Shopping_Cart
               Locked_Cart_Number   INT    ,
               Locked_Time     DATETIME   NOT NULL   DEFAULT CURRENT_TIMESTAMP ,
               PRIMARY KEY( id , Cart_Number , Locked_Cart_Number ) ,
-              FOREIGN KEY( id , Cart_Number ) REFERENCES Shopping_Cart(id ,  Cart_Number) ON UPDATE CASCADE	ON DELETE RESTRICT );
+              FOREIGN KEY( id , Cart_Number ) REFERENCES Shopping_Cart(id ,  Cart_Number) ON UPDATE CASCADE	ON DELETE CASCADE );
 
 
 CREATE TABLE Transactions  
@@ -72,7 +72,7 @@ CREATE TABLE  Issued_For
                 Cart_number     INT NOT NULL,
                 Locked_number   INT NOT NULL,
                 FOREIGN KEY(Tracking_code) REFERENCES Transactions(Tracking_code)	ON UPDATE CASCADE	ON DELETE RESTRICT , 
-                FOREIGN KEY(id , Cart_number , Locked_number) REFERENCES Locked_Shopping_Cart(id , Cart_Number , Locked_Cart_Number ) ON UPDATE CASCADE	ON DELETE RESTRICT);
+                FOREIGN KEY(id , Cart_number , Locked_number) REFERENCES Locked_Shopping_Cart(id , Cart_Number , Locked_Cart_Number ) ON UPDATE CASCADE	ON DELETE CASCADE);
                 
 CREATE TABLE  Deposits_Into_Wallet
               ( Tracking_code   VARCHAR(20)          PRIMARY KEY  ,
@@ -87,21 +87,21 @@ CREATE TABLE  Subscribes
                 FOREIGN KEY(id)	REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE );
                 
 CREATE TABLE Discount_Code 
-             ( Dis_Code        VARCHAR(10)          PRIMARY KEY , 
-               Amount          INT                  NOT NULL    CHECK(Amount > 0 ) ,
-               Dis_Limit       INT                  NOT NULL    CHECK(Dis_Limit > 0 ) ,
-               Usage_count     INT                  NOT NULL    CHECK(Usage_count > 0 ) ,
-               Expiration_date   DATETIME                 NOT NULL  );
+             ( Dis_Code          INT           PRIMARY KEY AUTO_INCREMENT , 
+               Amount            FLOAT         NOT NULL    CHECK(Amount > 0 ) ,
+               Dis_Limit         FLOAT         NOT NULL    CHECK(Dis_Limit > 0 ) ,
+               Usage_count       INT           NOT NULL    DEFAULT 1  CHECK(Usage_count > 0 )   ,
+               Expiration_date   DATETIME    );
               
 CREATE TABLE Private_Code 
-             ( Private_DCode      VARCHAR(10)  PRIMARY KEY ,
+             ( Private_DCode      INT         PRIMARY KEY ,
 			   id                 INT         NOT NULL    ,
-               Code_Time           DATETIME   NOT NULL    DEFAULT CURRENT_TIMESTAMP ,
+               Code_Time          DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP ,
                FOREIGN KEY(Private_DCode) REFERENCES Discount_Code(Dis_Code)  ON UPDATE CASCADE	ON DELETE CASCADE ,
                FOREIGN KEY(id)	REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE );
                
 CREATE TABLE Public_Code  
-             ( Public_DCode    VARCHAR(10)  PRIMARY KEY ,
+             ( Public_DCode    INT   PRIMARY KEY ,
 			  FOREIGN KEY(Public_DCode) REFERENCES Discount_Code(Dis_Code) ON UPDATE CASCADE	ON DELETE CASCADE );
               
 CREATE TABLE  Product 
@@ -128,7 +128,7 @@ CREATE TABLE Applied_To
 			( id       INT ,
 			  Cart_number    INT ,
 			  Locked_number  INT ,
-              ACode         VARCHAR(10) ,
+              ACode         INT ,
               Apply_Time    DATETIME    NOT NULL     DEFAULT CURRENT_TIMESTAMP ,
 			 PRIMARY KEY (id , Cart_number , Locked_number ,  ACode) ,
 			 FOREIGN KEY(id , Cart_number , Locked_number ) REFERENCES Locked_Shopping_Cart(id , Cart_Number , Locked_Cart_Number ) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -268,5 +268,87 @@ CREATE TABLE CONNECTOR_COMPATIBLE_WITH
 				PRIMARY KEY (Power_ID, GPU_ID), 
 				FOREIGN KEY(GPU_ID ) REFERENCES GPU(id) ON UPDATE CASCADE ON DELETE CASCADE,
 				FOREIGN KEY(Power_ID ) REFERENCES POWER_SUPPLY(id) ON UPDATE CASCADE ON DELETE CASCADE);
+                
 
+-- TRIGGERS
+
+DELIMITER //
+
+CREATE TRIGGER discount_code_usage BEFORE INSERT ON Applied_To  FOR EACH ROW
+BEGIN
+       DECLARE Max_usage INT;
+	   DECLARE client_usage INT;
+       
+    SELECT  Usage_count INTO Max_usage FROM Discount_Code WHERE  Dis_Code = NEW.ACode ;
+    SELECT COUNT(*) INTO client_usage FROM Applied_To WHERE id = NEW.id AND ACode = NEW.ACode ;
+    
+    IF ( client_usage >= Max_usage) THEN
+       	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'The limit of using this discount code has been reached.';
+	END IF;
+    
+
+END//
+
+CREATE TRIGGER discount_code_time  BEFORE INSERT ON Applied_To  FOR EACH ROW
+BEGIN
+       DECLARE edate DATETIME;
+       
+       SELECT Expiration_date INTO edate FROM Discount_Code WHERE Dis_Code = NEW.ACode ;
+       
+       IF ( edate < CURRENT_TIMESTAMP ) THEN
+           	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'This code has exxpired.';
+	 END IF;
+
+END//
+
+
+CREATE TRIGGER management_of_referral AFTER INSERT ON  refers FOR EACH ROW 
+BEGIN 
+       DECLARE  referee_id INT;
+       DECLARE  referrer_id INT;
+	   DECLARE  new_code INT;
+       DECLARE  current_level INT DEFAULT 0;
+       DECLARE  new_amount FLOAT;
+	   DECLARE  new_limit FLOAT;
+       
+       SET referee_id = NEW.Referee ;
+       SET referrer_id=NEW.Referrer ;
+       
+       WHILE referee_id IS NOT NULL DO
+		  SET new_amount = 50 / POW ( 2 , current_level);
+          IF ( new_amount < 1 ) THEN 
+              SET new_amount=50000;
+              SET new_limit=50000;
+		 ELSE 
+              SET new_limit=1000000;
+		 END IF;
+       
+          
+          -- Dis_code --> AUTO_INCREMENT  Usage_count --> DEFAULT 1
+          INSERT INTO Discount_Code (Amount , Dis_Limit  , Expiration_date)
+		  VALUES ( new_amount , new_limit , DATE_ADD(NOW(), INTERVAL 1 WEEK ));
+          
+          SET new_code = LAST_INSERT_ID();
+          
+         -- Code_Time --> DEFAULT CURRENT_TIMESTAMP
+          INSERT INTO  Private_Code ( Private_DCode , id  )
+          VALUES ( new_cod , referee_id );
+          
+          IF EXISTS ( SELECT 1 FROM refers r WHERE r.Referee=referrer_id ) THEN
+              SELECT Referee , Referrer  INTO referrer_id ,  referrer_id FROM refers r WHERE r.Referee = referrer_id ;
+          ELSE 
+              SET referrer_id = NULL ;
+          END IF;
+          SET current_level=current_level+1;
+	
+    END WHILE;
+    
+END//
+          
+
+
+
+       
                               
