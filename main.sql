@@ -32,9 +32,9 @@ CREATE TABLE refers
 CREATE TABLE  Shopping_Cart 
                ( id           INT ,
                  Cart_Number   INT  ,
-                 Cart_Status   ENUM ( 'free' ,
+                 Cart_Status   ENUM ( 'acctive' ,
                                       'blocked' ,
-                                      'locked' )         NOT NULL  DEFAULT 'free'  ,
+                                      'locked' )         NOT NULL  DEFAULT 'acctive'  ,
 		     
                    PRIMARY KEY ( id ,  Cart_Number ) ,
                    FOREIGN KEY(id) REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE );
@@ -52,8 +52,8 @@ CREATE TABLE Transactions
              ( Tracking_code         VARCHAR(20)          PRIMARY KEY  ,
                T_Status              ENUM                
                                      ( 'Successful',
-                                        'UnSuccessful'   ,
-									    'Partially_Successful'          )    NOT NULL      DEFAULT 'Successful'  ,
+                                        'UnSuccessful',
+									    'Partially_Successful')    NOT NULL      DEFAULT 'Successful'  ,
 			 Transactions_time      DATETIME             NOT NULL      DEFAULT CURRENT_TIMESTAMP );
              
 CREATE TABLE Bank_Transactions 
@@ -351,7 +351,7 @@ CREATE TRIGGER Check_inventory  BEFORE INSERT ON Added_To  FOR EACH ROW
 BEGIN
        DECLARE StockCount INT;
        
-       SELECT Stock_count INTO StockCount FROM Product WHERE id = NEW.Aid ;
+       SELECT Stock_count INTO StockCount FROM Product WHERE id = NEW.id ;
        
        IF ( StockCount < 0 ) THEN
            	SIGNAL SQLSTATE '45000'
@@ -363,7 +363,7 @@ CREATE TRIGGER Product_Stock_Decrease  AFTER INSERT ON Added_To  FOR EACH ROW
 BEGIN
 		UPDATE Product
         SET Stock_count = Stock_count - 1
-		WHERE id = NEW.Aid ;
+		WHERE id = NEW.id ;
 END//
 
 CREATE TRIGGER check_and_update_date BEFORE INSERT ON VIP_Clients FOR EACH ROW
@@ -381,9 +381,11 @@ END//
 CREATE TRIGGER check_locked_cart BEFORE INSERT ON Locked_Shopping_Cart FOR EACH ROW
 BEGIN
 
-    DECLARE CartStatus INT;
+    DECLARE CartStatus ENUM ( 'acctive' ,
+							  'blocked' ,
+							  'locked' );
        
-       SELECT Cart_Status INTO CartStatus FROM Shopping_Cart WHERE id = NEW.Aid ;
+       SELECT Cart_Status INTO CartStatus FROM Shopping_Cart WHERE id = NEW.id ;
        
        IF ( Cart_Status = 'locked' ) THEN
            	SIGNAL SQLSTATE '45000'
@@ -394,30 +396,20 @@ END//
 CREATE TRIGGER convert_to_free AFTER INSERT ON Issued_For FOR EACH ROW
 BEGIN
 
-    DECLARE TStatus INT;
+    DECLARE TStatus ENUM  ( 'Successful',
+							'UnSuccessful' ,
+							'Partially_Successful') ;
        
-       SELECT T_Status INTO TStatus FROM Transactions WHERE Tracking_code = NEW.ATracking_code ;
+       SELECT T_Status INTO TStatus FROM Transactions WHERE Tracking_code = NEW.Tracking_code ;
        
        IF ( T_Status = 'Successful' ) THEN
            	UPDATE Shopping_Cart
-			SET Cart_Status = 'free'
+			SET Cart_Status = 'acctive'
             WHERE Cart_Number = NEW.Cart_number AND NEW.id = id ;
 	 END IF;
 END//
 
-CREATE TRIGGER being_block AFTER INSERT ON Issued_For FOR EACH ROW
-BEGIN
 
-    DECLARE TStatus INT;
-       
-       SELECT T_Status INTO TStatus FROM Transactions WHERE Tracking_code = NEW.ATracking_code ;
-       
-       IF ( T_Status = 'Successful' ) THEN
-           	UPDATE Shopping_Cart
-			SET Cart_Status = 'free'
-            WHERE Cart_Number = NEW.Cart_number AND NEW.id = id ;
-	 END IF;
-END//
 
 
 
