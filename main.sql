@@ -378,6 +378,47 @@ BEGIN
 END//
 
 
+CREATE TRIGGER check_locked_cart BEFORE INSERT ON Locked_Shopping_Cart FOR EACH ROW
+BEGIN
+
+    DECLARE CartStatus INT;
+       
+       SELECT Cart_Status INTO CartStatus FROM Shopping_Cart WHERE id = NEW.Aid ;
+       
+       IF ( Cart_Status = 'locked' ) THEN
+           	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'This cart is block';
+	 END IF;
+END//
+
+CREATE TRIGGER convert_to_free AFTER INSERT ON Issued_For FOR EACH ROW
+BEGIN
+
+    DECLARE TStatus INT;
+       
+       SELECT T_Status INTO TStatus FROM Transactions WHERE Tracking_code = NEW.ATracking_code ;
+       
+       IF ( T_Status = 'Successful' ) THEN
+           	UPDATE Shopping_Cart
+			SET Cart_Status = 'free'
+            WHERE Cart_Number = NEW.Cart_number AND NEW.id = id ;
+	 END IF;
+END//
+
+CREATE TRIGGER being_block AFTER INSERT ON Issued_For FOR EACH ROW
+BEGIN
+
+    DECLARE TStatus INT;
+       
+       SELECT T_Status INTO TStatus FROM Transactions WHERE Tracking_code = NEW.ATracking_code ;
+       
+       IF ( T_Status = 'Successful' ) THEN
+           	UPDATE Shopping_Cart
+			SET Cart_Status = 'free'
+            WHERE Cart_Number = NEW.Cart_number AND NEW.id = id ;
+	 END IF;
+END//
+
 
 
 
