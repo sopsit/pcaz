@@ -387,7 +387,7 @@ BEGIN
        
        SELECT Cart_Status INTO CartStatus FROM Shopping_Cart WHERE id = NEW.id ;
        
-       IF ( Cart_Status = 'locked' ) THEN
+       IF ( Cart_Status = 'blocked' ) THEN
            	SIGNAL SQLSTATE '45000'
 		SET MESSAGE_TEXT = 'This cart is block';
 	 END IF;
@@ -401,7 +401,6 @@ BEGIN
 							'Partially_Successful') ;
        
        SELECT T_Status INTO TStatus FROM Transactions WHERE Tracking_code = NEW.Tracking_code ;
-       
        IF ( T_Status = 'Successful' ) THEN
            	UPDATE Shopping_Cart
 			SET Cart_Status = 'acctive'
@@ -409,6 +408,27 @@ BEGIN
 	 END IF;
 END//
 
+CREATE TRIGGER one_or_five_cart BEFORE INSERT ON Locked_Shopping_Cart FOR EACH ROW
+BEGIN
+
+	   DECLARE count_cart INT ;
+       SELECT COUNT(id) INTO count_cart FROM Locked_Shopping_Cart WHERE id = NEW.id ;
+       
+       IF ( count_cart > 0 and   EXISTS (SELECT id FROM VIP_Clients WHERE id = NEW.id AND ((NOW() - Subscription_expiration_time ) > '0000-01-00 00:00:00'))) THEN
+           	SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'you already got one cart!';
+	  END IF;
+      IF ( count_cart > 4 and   EXISTS (SELECT id FROM VIP_Clients WHERE id = NEW.id AND ((NOW() - Subscription_expiration_time ) < '0000-01-00 00:00:00'))) THEN
+			SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'you already got five cart!';
+		END IF;
+END//
+
+CREATE EVENT unblocke_carts ON SCHEDULE EVERY 1 DAY STARTS '2025-03-00 00:00:00'
+	DO
+		UPDATE Shopping_Cart SET Cart_Status = 'acctive'
+        WHERE (SELECT * FROM Locked_Shopping_Cart NATURAL JOIN  Shopping_Cart WHERE ((NOW() - Locked_Time ) > '0000-00-07 00:00:00') AND Cart_Status = 'blocked' 
+				AND (EXISTS (SELECT id FROM VIP_Clients WHERE id = id AND ((NOW() - Subscription_expiration_time ) > '0000-01-00 00:00:00')) AND Cart_Number = 1))
 
 
 
