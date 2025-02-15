@@ -274,7 +274,60 @@ CREATE TABLE CONNECTOR_COMPATIBLE_WITH
 
 DELIMITER //
 
-CREATE TRIGGER discount_code_usage BEFORE INSERT ON Applied_To  FOR EACH ROW
+CREATE PROCEDURE apply_discount (client_id INT , Cart_num INT , Locked_num INT , OUT total_price DOUBLE) 
+BEGIN  
+DECLARE first_price DOUBLE;
+DECLARE  current_code INT ; 
+DECLARE current_amount DOUBLE;
+DECLARE current_limit DOUBLE;
+DECLARE L_code CURSOR FOR SELECT ACode FROM Applied_To A 
+WHERE A.Cart_number = Cart_num AND A.Locked_number = Locked_num AND A.id = client_id ORDER BY A.Apply_Time ;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET flag = TRUE;
+
+SELECT SUM(Cart_price * Quantity ) INTO first_price FROM Added_To WHERE   Cart_number = Cart_num AND Locked_number = Locked_num AND id = client_id;
+ 
+OPEN L_code;
+CLOOP : LOOP
+FETCH NEXT FROM L_code INTO current_code;
+IF flag THEN LEAVE CLOOP;
+END IF;   
+
+SELECT Amount, Dis_Limit INTO current_amount , current_limit FROM Discount_Code WHERE current_code = Dis_Code ;
+IF(current_amount BETWEEN 0 AND 100 ) AND current_limit IS NOT NULL THEN 
+	SET first_price = first_price - LEAST(current_limit,first_price *( current_amount / 100)) ;
+ELSEIF (current_amount BETWEEN 0 AND 100 ) AND current_limit IS NULL THEN
+	SET first_price = first_price - (current_limit,first_price *( current_amount / 100)) ;
+ELSEIF (current_amount > 100) THEN
+	SET first_price = first_price - current_amount;	
+END IF;
+END LOOP;
+CLOSE L_code;
+
+IF first_price < 0 THEN 
+SET total_price = 0 ;
+ELSE 
+SET total_price = first_price ;
+END IF;
+END; //
+
+CREATE TRIGGER decrease_wallet AFTER INSERT ON Issued_For FOR EACH ROW 
+BEGIN
+
+DECLARE TStatus ENUM  ( 'Successful',
+							'UnSuccessful' ,
+							'Partially_Successful') ;
+DECLARE Price  DOUBLE;
+                            
+SELECT T_Status INTO TStatus FROM Transactions T WHERE NEW.Tracking_code =T.Tracking_code;
+IF TStatus = 'Successful' AND EXISTS (SELECT 1 FROM Wallet_Transactions W WHERE W.Tracking_code = NEW.Tracking_code) THEN 
+CALL apply_discount (NEW.id , NEW.Cart_number, NEW.Locked_number , price);
+UPDATE clients c
+SET Wallet_balance = Wallet_balance - price
+WHERE c.id = NEW.id;
+END IF;
+END;
+
+CREATE TRIGGER discount_code_usage BEFORE INSERT ON Applied_To  FOR EACH ROW 
 BEGIN
        DECLARE Max_usage INT;
 	   DECLARE client_usage INT;
@@ -424,15 +477,20 @@ BEGIN
 		END IF;
 END//
 
-CREATE EVENT unblocke_carts ON SCHEDULE EVERY 1 DAY STARTS '2025-03-00 00:00:00'
+CREATE EVENT unblocke_carts ON SCHEDULE EVERY 1 MINUTE STARTS '2025-03-00 00:00:00'
 	DO
 		UPDATE Shopping_Cart SET Cart_Status = 'acctive'
         WHERE (SELECT * FROM Locked_Shopping_Cart NATURAL JOIN  Shopping_Cart WHERE ((NOW() - Locked_Time ) > '0000-00-07 00:00:00') AND Cart_Status = 'blocked' 
-				AND (EXISTS (SELECT id FROM VIP_Clients WHERE id = id AND ((NOW() - Subscription_expiration_time ) > '0000-01-00 00:00:00')) AND Cart_Number = 1))
+				AND (EXISTS (SELECT id FROM VIP_Clients WHERE id = id AND ((NOW() - Subscription_expiration_time ) > '0000-01-00 00:00:00')) AND Cart_Number = 1));
 
 
-
-
+CREATE EVENT after_3_days ON SCHEDULE EVERY 1 DAY STARTS '2025-03-00 00:00:00'
+	DO
+		DECLARE _Quantity INT DEFAULT 0;
+        SELECT Quantity INTO _Quantity FROM (Locked_Shopping_Cart  L NATURAL JOIN Added_To) NATURAL JOIN Shopping_Cart  WHERE (((NOW() - Locked_Time) > '0000-00-03 00:00:00') AND (Cart_Status = 'locked'))
+		UPDATE Product SET Stock_count = Stock_count + _Quantity WHERE id = Product_ID ;
+		UPDATE Shopping_Cart  SET Cart_Status = 'acctive' WHERE id = L.id 
+        
 
 
 
