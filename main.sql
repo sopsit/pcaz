@@ -309,6 +309,8 @@ ELSE
 SET total_price = first_price ;
 END IF;
 END; //
+    
+
 
 CREATE TRIGGER decrease_wallet AFTER INSERT ON Issued_For FOR EACH ROW 
 BEGIN
@@ -490,6 +492,49 @@ CREATE EVENT after_3_days ON SCHEDULE EVERY 1 DAY STARTS '2025-03-00 00:00:00'
         SELECT Quantity INTO _Quantity FROM (Locked_Shopping_Cart  L NATURAL JOIN Added_To) NATURAL JOIN Shopping_Cart  WHERE (((NOW() - Locked_Time) > '0000-00-03 00:00:00') AND (Cart_Status = 'locked'))
 		UPDATE Product SET Stock_count = Stock_count + _Quantity WHERE id = Product_ID ;
 		UPDATE Shopping_Cart  SET Cart_Status = 'acctive' WHERE id = L.id 
+        
+CREATE EVENT fiftheen_perc ON SCHEDULE EVERY 1 DAY STARTS '2025-03-00 00:00:00'
+	DO        
+    
+    SELECT L.id , L.Cart_Number, L.Locked_Cart_Number
+    FROM Locked_Shopping_Cart L, Issued_For I , Transactions T, VIP_Clients V
+    WHERE T_Status = 'Successful' AND (T.Transactions_time >= Subscription_expiration_time AND T.Transactions_time <= (Subscription_expiration_time + INTERVAL 1 MONTH ) AND NOW() - INTERVAL 1 MONTH =< Subscription_expiration_time)
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+VIP_Clients
+			( id        INT           PRIMARY KEY ,
+              Subscription_expiration_time    DATETIME      NOT NULL   ,
+
+
+Locked_Shopping_Cart 
+			( id           INT ,
+              Cart_Number   INT  ,
+              Locked_Cart_Number   INT    ,
+              Locked_Time     DATETIME   NOT NULL   DEFAULT CURRENT_TIMESTAMP ,
+              
+
+Issued_For 
+              ( Tracking_code   VARCHAR(20)          PRIMARY KEY  ,
+				id              INT  NOT NULL,
+                Cart_number     INT NOT NULL,
+                Locked_number   INT NOT NULL, 
+                
+                
+Transactions  
+             ( Tracking_code         VARCHAR(20)          PRIMARY KEY  ,
+               T_Status              ENUM                
+                                     ( 'Successful',
+                                        'UnSuccessful',
+									    'Partially_Successful')    NOT NULL      DEFAULT 'Successful'  ,
+			 Transactions_time      DATETIME             NOT NULL      DEFAULT CURRENT_TIMESTAMP );
+             
+CREATE TRIGGER decrease_wallet AFTER INSERT ON Issued_For FOR EACH ROW 
+BEGIN            
+	DECLARE cart_list CURSOR FOR
+    SELECT * 
+    FROM Locked_Shopping_Cart L LEFT JOIN Issued_For I ON (L.id = I.id AND L.Cart_Number= I.Cart_number AND L.Locked_Cart_Number = I.Locked_number) LEFT JOIN Transactions T ON
+    I.Tracking_code = T.Tracking_code
+    WHERE (L.Locked_Time < NOW() - INTERVAL 3 DAY) AND (T.T_Status <>'Successful' OR NOT EXISTS (SELECT 1 FROM Transactions TR WHERE TR.Tracking_code = T.Tracking_code))
         
 
 
