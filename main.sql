@@ -1,3 +1,4 @@
+
 CREATE DATABASE peysaz;
 
 USE peysaz;
@@ -31,10 +32,10 @@ CREATE TABLE refers
 
 CREATE TABLE  Shopping_Cart 
                ( id           INT ,
-                 Cart_Number   INT  ,
-                 Cart_Status   ENUM ( 'acctive' ,
+                 Cart_Number   INT  CHECK ( Cart_Number >= 1 AND Cart_Number <= 5 ),
+                 Cart_Status   ENUM ( 'active' ,
                                       'blocked' ,
-                                      'locked' )         NOT NULL  DEFAULT 'acctive'  ,
+                                      'locked' )         NOT NULL  DEFAULT 'active'  ,
 		     
                    PRIMARY KEY ( id ,  Cart_Number ) ,
                    FOREIGN KEY(id) REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE );
@@ -272,44 +273,102 @@ CREATE TABLE CONNECTOR_COMPATIBLE_WITH
 
 -- TRIGGERS
 
-DELIMITER //
+DELIMITER //  
 
-CREATE PROCEDURE apply_discount (client_id INT , Cart_num INT , Locked_num INT , OUT total_price DOUBLE) 
+-- ------------ PROCEDURE -------------- 
+
+CREATE PROCEDURE calculate_price (client_id INT , Cart_num INT , Locked_num INT , OUT total_price DOUBLE) 
 BEGIN  
-DECLARE first_price DOUBLE;
+DECLARE temp_price DOUBLE;
 DECLARE  current_code INT ; 
 DECLARE current_amount DOUBLE;
 DECLARE current_limit DOUBLE;
 DECLARE L_code CURSOR FOR SELECT ACode FROM Applied_To A 
 WHERE A.Cart_number = Cart_num AND A.Locked_number = Locked_num AND A.id = client_id ORDER BY A.Apply_Time ;
-DECLARE CONTINUE HANDLER FOR NOT FOUND SET flag = TRUE;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-SELECT SUM(Cart_price * Quantity ) INTO first_price FROM Added_To WHERE   Cart_number = Cart_num AND Locked_number = Locked_num AND id = client_id;
+SELECT SUM(Cart_price * Quantity ) INTO temp_price FROM Added_To A WHERE  A.Cart_number = Cart_num AND A.Locked_number = Locked_num AND A.id = client_id;
  
 OPEN L_code;
 CLOOP : LOOP
 FETCH NEXT FROM L_code INTO current_code;
-IF flag THEN LEAVE CLOOP;
+IF done THEN LEAVE CLOOP;
 END IF;   
 
 SELECT Amount, Dis_Limit INTO current_amount , current_limit FROM Discount_Code WHERE current_code = Dis_Code ;
-IF(current_amount BETWEEN 0 AND 100 ) AND current_limit IS NOT NULL THEN 
-	SET first_price = first_price - LEAST(current_limit,first_price *( current_amount / 100)) ;
-ELSEIF (current_amount BETWEEN 0 AND 100 ) AND current_limit IS NULL THEN
-	SET first_price = first_price - (current_limit,first_price *( current_amount / 100)) ;
+IF(current_amount BETWEEN 1 AND 100 ) AND current_limit IS NOT NULL THEN 
+	SET temp_price = temp_price - LEAST(current_limit,temp_price *( current_amount / 100)) ;
+ELSEIF (current_amount BETWEEN 1 AND 100 ) AND current_limit IS NULL THEN
+	SET temp_price = temp_price - temp_price *( current_amount / 100) ;
 ELSEIF (current_amount > 100) THEN
-	SET first_price = first_price - current_amount;	
+	SET temp_price = temp_price - current_amount;	
 END IF;
 END LOOP;
 CLOSE L_code;
 
-IF first_price < 0 THEN 
+IF temp_price < 0 THEN 
 SET total_price = 0 ;
 ELSE 
-SET total_price = first_price ;
+SET total_price = temp_price ;
 END IF;
 END; //
+
+CREATE PROCEDURE Add_dicount_code ( client_id INT , new_amount DOUBLE , new_limit DOUBLE )
+BEGIN
+
+		 DECLARE  new_code INT;
+         -- Dis_code --> AUTO_INCREMENT  Usage_count --> DEFAULT 1
+          INSERT INTO Discount_Code (Amount , Dis_Limit  , Expiration_date)
+		  VALUES ( new_amount , new_limit , DATE_ADD(NOW(), INTERVAL 1 WEEK ));
+          
+          SET new_code = LAST_INSERT_ID();
+          
+         -- Code_Time --> DEFAULT CURRENT_TIMESTAMP
+          INSERT INTO  Private_Code ( Private_DCode , id  )
+          VALUES ( new_cod , client_id );
+
+END; //
+
+CREATE PROCEDURE add_15percent_of_vip_clients () 
+BEGIN
+     DECLARE VIP_client_id INT;
+     DECLARE cur_cart_number INT;
+     DECLARE cur_locked_cart_number INT;
+     DECLARE Price DOUBLE;
+	 DECLARE cart_list CURSOR FOR SELECT  I.id ,  I.Cart_number ,  I.Locked_number 
+     FROM VIP_Clients VIP , Issued_For I , Transactions T 
+     WHERE VIP.id=I.id AND I.Tracking_code = T.Tracking_code AND T.T_Status='Successful' AND
+     T.Transactions_time >= DATE_SUB( NOW() , INTERVAL 1 MONTH ) AND T.Transactions_time <= NOW()
+	 AND VIP.Subscription_expiration_time >= NOW();
+     
+     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+     
+     OPEN cart_list;
+    cart_loop : LOOP
+	FETCH NEXT FROM cart_list INTO VIP_client_id , cur_cart_number , cur_locked_cart_number ;
+	IF done THEN LEAVE cart_loop;
+    END IF;   
+       
+       CALL calculate_price( VIP_client_id , cur_cart_number , cur_locked_cart_number , price );
+       
+       UPDATE clients 
+       SET    Wallet_balance = Wallet_balance + ( price * 0.15 )
+       WHERE  id=VIP_client_id;
+	
+    END LOOP;
+    CLOSE cart_list;
     
+END; //
+     
+     
+-- ----------------------- TRIGGER ----------------------------
+
+CREATE TRIGGER add_cart_for_clients AFTER INSERT ON clients  FOR EACH ROW
+BEGIN
+       -- Cart_Status --> DEFAULT active
+       INSERT INTO Shopping_Cart ( id , Cart_Number )
+       VALUES (NEW.id , 1 ) ;
+END; //
 
 
 CREATE TRIGGER decrease_wallet AFTER INSERT ON Issued_For FOR EACH ROW 
@@ -318,11 +377,11 @@ BEGIN
 DECLARE TStatus ENUM  ( 'Successful',
 							'UnSuccessful' ,
 							'Partially_Successful') ;
-DECLARE Price  DOUBLE;
+DECLARE Price  DOUBLE ;
                             
 SELECT T_Status INTO TStatus FROM Transactions T WHERE NEW.Tracking_code =T.Tracking_code;
 IF TStatus = 'Successful' AND EXISTS (SELECT 1 FROM Wallet_Transactions W WHERE W.Tracking_code = NEW.Tracking_code) THEN 
-CALL apply_discount (NEW.id , NEW.Cart_number, NEW.Locked_number , price);
+CALL calculate_price(NEW.id , NEW.Cart_number, NEW.Locked_number , price);
 UPDATE clients c
 SET Wallet_balance = Wallet_balance - price
 WHERE c.id = NEW.id;
@@ -342,7 +401,6 @@ BEGIN
 		SET MESSAGE_TEXT = 'The limit of using this discount code has been reached.';
 	END IF;
     
-
 END//
 
 CREATE TRIGGER discount_code_time  BEFORE INSERT ON Applied_To  FOR EACH ROW
@@ -356,59 +414,80 @@ BEGIN
 		SET MESSAGE_TEXT = 'This code has exxpired.';
 	 END IF;
 
-END//
+END; //
 
+CREATE TRIGGER check_blocked_cart_in_Applied_To BEFORE INSERT ON Applied_To FOR EACH ROW
+BEGIN
+
+    DECLARE CartStatus ENUM ( 'active' ,
+							  'blocked' ,
+							  'locked' );
+       
+       SELECT Cart_Status INTO CartStatus FROM Shopping_Cart S WHERE S.id = NEW.id AND S.Cart_Number = NEW.Cart_number ;
+       
+       IF ( CartStatus = 'blocked' ) THEN
+           	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'This cart is not blocked ! you cant apply discount code.';
+	 END IF;
+END; //
 
 CREATE TRIGGER management_of_referral AFTER INSERT ON  refers FOR EACH ROW 
 BEGIN 
-       DECLARE  referee_id INT;
-       DECLARE  referrer_id INT;
-	   DECLARE  new_code INT;
-       DECLARE  current_level INT DEFAULT 0;
-       DECLARE  new_amount FLOAT;
-	   DECLARE  new_limit FLOAT;
+	   DECLARE  r_id INT;
+       DECLARE  current_level INT DEFAULT 1;
+       DECLARE  temp_amount DOUBLE;
+	   DECLARE  temp_limit DOUBLE;
        
-       SET referee_id = NEW.Referee ;
-       SET referrer_id=NEW.Referrer ;
+       CALL Add_dicount_code (NEW.Referee , 50 , 1000000 );
        
-       WHILE referee_id IS NOT NULL DO
-		  SET new_amount = 50 / POW ( 2 , current_level);
-          IF ( new_amount < 1 ) THEN 
-              SET new_amount=50000;
-              SET new_limit=50000;
+       SET r_id = NEW.Referrer ;
+       
+        WHILE r_id IS NOT NULL DO
+          SET temp_amount= 50 / ( current_level * 2 );
+          IF ( temp_amount < 1 ) THEN 
+              SET temp_amount=50000;
+              SET temp_limit=50000;
 		 ELSE 
-              SET new_limit=1000000;
-		 END IF;
-       
-          
-          -- Dis_code --> AUTO_INCREMENT  Usage_count --> DEFAULT 1
-          INSERT INTO Discount_Code (Amount , Dis_Limit  , Expiration_date)
-		  VALUES ( new_amount , new_limit , DATE_ADD(NOW(), INTERVAL 1 WEEK ));
-          
-          SET new_code = LAST_INSERT_ID();
-          
-         -- Code_Time --> DEFAULT CURRENT_TIMESTAMP
-          INSERT INTO  Private_Code ( Private_DCode , id  )
-          VALUES ( new_cod , referee_id );
-          
-          IF EXISTS ( SELECT 1 FROM refers r WHERE r.Referee=referrer_id ) THEN
-              SELECT Referee , Referrer  INTO referrer_id ,  referrer_id FROM refers r WHERE r.Referee = referrer_id ;
+              SET temp_limit=1000000;
+		 END IF;   
+         
+         CALL Add_dicount_code( r_id , temp_amount , temp_limit );
+         
+         IF EXISTS ( SELECT 1 FROM refers r WHERE r.Referee=r_id ) THEN
+              SELECT  Referrer  INTO r_id  FROM refers r WHERE r.Referee = r_id ;
           ELSE 
-              SET referrer_id = NULL ;
+              SET r_id = NULL ;
           END IF;
           SET current_level=current_level+1;
 	
     END WHILE;
     
+END; //
+          
+
+CREATE TRIGGER charge_wallet AFTER INSERT ON Deposits_Into_Wallet FOR EACH ROW
+BEGIN 
+        DECLARE TStatus ENUM  ( 'Successful',
+							    'UnSuccessful' ,
+							    'Partially_Successful') ;
+		
+        SELECT T_Status INTO TStatus FROM Transactions T WHERE T.Tracking_code=NEW.Tracking_code;
+        
+        IF(TStatus='Successful') THEN
+          UPDATE clients c
+          SET    Wallet_balance = Wallet_balance + NEW.Amount 
+          WHERE  c.id=NEW.id;
+		END IF;
+
 END//
 
 CREATE TRIGGER Check_inventory  BEFORE INSERT ON Added_To  FOR EACH ROW
 BEGIN
        DECLARE StockCount INT;
        
-       SELECT Stock_count INTO StockCount FROM Product WHERE id = NEW.id ;
+       SELECT Stock_count INTO StockCount FROM Product P WHERE P.id = NEW.Product_ID ;      
        
-       IF ( StockCount < 0 ) THEN
+       IF ( NEW.Quantity > StockCount  ) THEN
            	SIGNAL SQLSTATE '45000'
 		SET MESSAGE_TEXT = 'This product is not available';
 	 END IF;
@@ -416,132 +495,130 @@ END//
 
 CREATE TRIGGER Product_Stock_Decrease  AFTER INSERT ON Added_To  FOR EACH ROW
 BEGIN
-		UPDATE Product
-        SET Stock_count = Stock_count - 1
-		WHERE id = NEW.id ;
+		UPDATE Product P
+        SET Stock_count = Stock_count - NEW.Quantity
+		WHERE P.id = NEW.Product_ID ;
 END//
 
-CREATE TRIGGER check_and_update_date BEFORE INSERT ON VIP_Clients FOR EACH ROW
+
+CREATE TRIGGER add_to_VIP AFTER INSERT ON Subscribes FOR EACH ROW
 BEGIN
-    IF EXISTS (SELECT id FROM VIP_Clients WHERE id = NEW.id) THEN
-        UPDATE VIP_Clients
-        SET Subscription_expiration_time = CURDATE()
-        WHERE id = NEW.id;
-    ELSE
-        SET NEW.Subscription_expiration_time = CURDATE();
-    END IF;
-END//
+       IF EXISTS ( SELECT 1 FROM VIP_Clients VIP WHERE VIP.id=NEW.id) THEN
+          UPDATE VIP_Clients 
+          SET  Subscription_expiration_time = DATE_ADD(NOW() , INTERVAL 1 MONTH )
+          WHERE VIP.ID = NEW.id;
+          
+	  ELSE
+          INSERT INTO VIP_Clients ( id , Subscription_expiration_time )
+          VALUES ( NEW.id , DATE_ADD(NOW() , INTERVAL 1 MONTH ) );
+	END IF;
+    
+END; //
 
+CREATE TRIGGER decrease_wallet_for_sub AFTER INSERT ON Subscribes FOR EACH ROW
+BEGIN
+           DECLARE TStatus ENUM  ( 'Successful',
+						        	'UnSuccessful' ,
+							        'Partially_Successful') ;
+		
+	IF EXISTS ( SELECT 1 FROM Wallet_Transactions W WHERE W.Tracking_code = NEW.Tracking_code ) THEN
+        SELECT T_Status INTO TStatus FROM Transactions T WHERE T.Tracking_code = NEW.Tracking_code;
+		IF ( TStatus = 'Successful' ) THEN
+            UPDATE clients c
+            SET    Wallet_balance = Wallet_balance - 100000
+            WHERE  c.id = NEW.id;
+		END IF;
+	END IF;
+
+END; //
+       
 
 CREATE TRIGGER check_locked_cart BEFORE INSERT ON Locked_Shopping_Cart FOR EACH ROW
 BEGIN
 
-    DECLARE CartStatus ENUM ( 'acctive' ,
+    DECLARE CartStatus ENUM ( 'active' ,
 							  'blocked' ,
 							  'locked' );
        
-       SELECT Cart_Status INTO CartStatus FROM Shopping_Cart WHERE id = NEW.id ;
+       SELECT Cart_Status INTO CartStatus FROM Shopping_Cart S WHERE S.id = NEW.id AND S.Cart_Number = NEW.Cart_Number ;
        
-       IF ( Cart_Status = 'blocked' ) THEN
+       IF ( CartStatus = 'blocked' OR CartStatus = 'locked' ) THEN
            	SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = 'This cart is block';
+		SET MESSAGE_TEXT = 'This cart is not available';
 	 END IF;
-END//
+END; //
 
-CREATE TRIGGER convert_to_free AFTER INSERT ON Issued_For FOR EACH ROW
+
+CREATE TRIGGER unlock_cart AFTER INSERT ON Issued_For FOR EACH ROW
 BEGIN
 
     DECLARE TStatus ENUM  ( 'Successful',
 							'UnSuccessful' ,
 							'Partially_Successful') ;
-       
-       SELECT T_Status INTO TStatus FROM Transactions WHERE Tracking_code = NEW.Tracking_code ;
-       IF ( T_Status = 'Successful' ) THEN
-           	UPDATE Shopping_Cart
-			SET Cart_Status = 'acctive'
-            WHERE Cart_Number = NEW.Cart_number AND NEW.id = id ;
-	 END IF;
-END//
-
-CREATE TRIGGER one_or_five_cart BEFORE INSERT ON Locked_Shopping_Cart FOR EACH ROW
-BEGIN
-
-	   DECLARE count_cart INT ;
-       SELECT COUNT(id) INTO count_cart FROM Locked_Shopping_Cart WHERE id = NEW.id ;
-       
-       IF ( count_cart > 0 and   EXISTS (SELECT id FROM VIP_Clients WHERE id = NEW.id AND ((NOW() - Subscription_expiration_time ) > '0000-01-00 00:00:00'))) THEN
-           	SIGNAL SQLSTATE '45000'
-			SET MESSAGE_TEXT = 'you already got one cart!';
-	  END IF;
-      IF ( count_cart > 4 and   EXISTS (SELECT id FROM VIP_Clients WHERE id = NEW.id AND ((NOW() - Subscription_expiration_time ) < '0000-01-00 00:00:00'))) THEN
-			SIGNAL SQLSTATE '45000'
-			SET MESSAGE_TEXT = 'you already got five cart!';
-		END IF;
-END//
-
-CREATE EVENT unblocke_carts ON SCHEDULE EVERY 1 MINUTE STARTS '2025-03-00 00:00:00'
-	DO
-		UPDATE Shopping_Cart SET Cart_Status = 'acctive'
-        WHERE (SELECT * FROM Locked_Shopping_Cart NATURAL JOIN  Shopping_Cart WHERE ((NOW() - Locked_Time ) > '0000-00-07 00:00:00') AND Cart_Status = 'blocked' 
-				AND (EXISTS (SELECT id FROM VIP_Clients WHERE id = id AND ((NOW() - Subscription_expiration_time ) > '0000-01-00 00:00:00')) AND Cart_Number = 1));
-
-
-CREATE EVENT after_3_days ON SCHEDULE EVERY 1 DAY STARTS '2025-03-00 00:00:00'
-	DO
-		DECLARE _Quantity INT DEFAULT 0;
-        SELECT Quantity INTO _Quantity FROM (Locked_Shopping_Cart  L NATURAL JOIN Added_To) NATURAL JOIN Shopping_Cart  WHERE (((NOW() - Locked_Time) > '0000-00-03 00:00:00') AND (Cart_Status = 'locked'))
-		UPDATE Product SET Stock_count = Stock_count + _Quantity WHERE id = Product_ID ;
-		UPDATE Shopping_Cart  SET Cart_Status = 'acctive' WHERE id = L.id 
-        
-CREATE EVENT fiftheen_perc ON SCHEDULE EVERY 1 DAY STARTS '2025-03-00 00:00:00'
-	DO        
+	DECLARE IS_VIP_FLAG BOOLEAN DEFAULT FALSE;
     
-    SELECT L.id , L.Cart_Number, L.Locked_Cart_Number
-    FROM Locked_Shopping_Cart L, Issued_For I , Transactions T, VIP_Clients V
-    WHERE T_Status = 'Successful' AND (T.Transactions_time >= Subscription_expiration_time AND T.Transactions_time <= (Subscription_expiration_time + INTERVAL 1 MONTH ) AND NOW() - INTERVAL 1 MONTH =< Subscription_expiration_time)
+    IF EXISTS ( SELECT VIP.id FROM VIP_Clients VIP WHERE VIP.id=NEW.id AND Subscription_expiration_time >= NOW() ) THEN
+               SET IS_VIP_FLAG = TRUE ;
+	END IF;
+       SELECT T_Status INTO TStatus FROM Transactions T WHERE T.Tracking_code = NEW.Tracking_code ;
+       
+       IF ( TStatus = 'Successful' ) THEN
+           	IF ( NEW.Cart_number >= 2 AND NEW.Cart_number <= 5 AND IS_VIP_FLAG = FALSE ) THEN
+                 UPDATE  Shopping_Cart S
+                 SET     Cart_Status =  'blocked'
+                 WHERE   S.id = NEW.id AND S.Cart_Number = NEW.Cart_Number ;
+		   ELSE 
+                 UPDATE  Shopping_Cart S
+                 SET     Cart_Status = 'active'
+                 WHERE   S.id = NEW.id AND S.Cart_Number = NEW.Cart_Number ;
+		END IF;		
+	 END IF;
+END; //
 
--------------------------------------------------------------------------------------------------------------------------------------------
-VIP_Clients
-			( id        INT           PRIMARY KEY ,
-              Subscription_expiration_time    DATETIME      NOT NULL   ,
 
+CREATE TRIGGER check_count_of_carts BEFORE INSERT ON Shopping_Cart FOR EACH ROW
+BEGIN
+       DECLARE IS_VIP_FLAG BOOLEAN DEFAULT FALSE;
+       DECLARE count_of_carts INT;
+     IF EXISTS ( SELECT VIP.id FROM VIP_Clients VIP WHERE VIP.id=NEW.id AND Subscription_expiration_time >= NOW() ) THEN
+               SET IS_VIP_FLAG = TRUE ;
+     END IF;
+     
+     IF(IS_VIP_FLAG = TRUE ) THEN
+        SELECT COUNT(*) INTO count_of_carts FROM Shopping_Cart S WHERE S.id = NEW.id;
+        IF ( count_of_carts >= 5 ) THEN
+		   SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'VIP users can have only five carts!';
+		END IF;
+	ELSE 
+         IF ((EXISTS ( SELECT 1 FROM Shopping_Cart S WHERE S.id = NEW.id AND S.Cart_number = 1 )) OR NEW.Cart_number <> 1 ) THEN
+			SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'NOT VIP users can have only one cart!';
+		END IF;
+	END IF;
 
-Locked_Shopping_Cart 
-			( id           INT ,
-              Cart_Number   INT  ,
-              Locked_Cart_Number   INT    ,
-              Locked_Time     DATETIME   NOT NULL   DEFAULT CURRENT_TIMESTAMP ,
-              
+END; //
 
-Issued_For 
-              ( Tracking_code   VARCHAR(20)          PRIMARY KEY  ,
-				id              INT  NOT NULL,
-                Cart_number     INT NOT NULL,
-                Locked_number   INT NOT NULL, 
-                
-                
-Transactions  
-             ( Tracking_code         VARCHAR(20)          PRIMARY KEY  ,
-               T_Status              ENUM                
-                                     ( 'Successful',
-                                        'UnSuccessful',
-									    'Partially_Successful')    NOT NULL      DEFAULT 'Successful'  ,
-			 Transactions_time      DATETIME             NOT NULL      DEFAULT CURRENT_TIMESTAMP );
-             
-CREATE TRIGGER decrease_wallet AFTER INSERT ON Issued_For FOR EACH ROW 
-BEGIN            
-	DECLARE cart_list CURSOR FOR
-    SELECT * 
-    FROM Locked_Shopping_Cart L LEFT JOIN Issued_For I ON (L.id = I.id AND L.Cart_Number= I.Cart_number AND L.Locked_Cart_Number = I.Locked_number) LEFT JOIN Transactions T ON
-    I.Tracking_code = T.Tracking_code
-    WHERE (L.Locked_Time < NOW() - INTERVAL 3 DAY) AND (T.T_Status <>'Successful' OR NOT EXISTS (SELECT 1 FROM Transactions TR WHERE TR.Tracking_code = T.Tracking_code))
         
 
+-- ------------------------ EVENT --------------------------
+
+SET GLOBAL event_scheduler = ON;
+
+CREATE EVENT add_15percent
+ON SCHEDULE
+	EVERY 1 MONTH STARTS
+	CURRENT_DATE + INTERVAL 1 MONTH
+	ON COMPLETION PRESERVE
+DO
+    CALL add_15percent_of_vip_clients() ;    
 
 
-          
+        
 
 
 
        
                               
+
+
