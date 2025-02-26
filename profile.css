@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap');
+body {
+    margin: 0;
+    padding: 0 ;
+}
+.left {
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+    background-color: #181818;
+
+}
+.right {
+    display: flex;
+    flex-direction: column;
+    width:30%;
+    background-color:#181818;
+
+}
+.background {
+    display: flex;
+    flex-direction: row;
+    background-color: #0f0f0f;
+    width: 100vw;
+    height: 100vh;
+}
+.cart_list{
+    display: flex;
+    flex-direction: column;
+    width: 1200px;  
+    margin:10px;
+    border: 2px solid #1A501A;  
+
+}
+.profile{
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    margin:10px;
+    border: 2px solid #7EAE74;  
+   /* box-shadow: 0 0 5px 1x #4f984f; #d1ecd1*/ 
+
+}
+.name_pic{
+
+    display: flex;
+    flex-direction: row;
+    height: 120px;
+}
+.name{
+    display: flex;
+    flex-direction: column;
+    width:50%;
+    margin-top: 2%;
+}
+.pic{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+.txt{
+    padding-top: 12%;
+    font-size: 1.4rem;
+    color: white;
+    text-align: center;
+}
+.rec{
+    width: 70%;
+    height: 70%;
+    border: 2px solid #7EAE74;
+    margin-top: 10%;
+    margin-left: 15px;
+    border-radius: 10px;
+
+}
+.introduction{
+    display: flex;
+    flex-direction: row;
+    height: 80px;
+    margin-top: 2%;
+}
+.int1{
+    display: flex;
+    flex-direction: column;
+    width:50%;
+    margin-left: 2%;
+    margin-top: 3%;
+}
+.int2{
+    display: flex;
+    flex-direction: column;
+    width:50%;
+    margin-right: 0%;
+    margin-top: 5%;
+
+
+}
+.o_txt{
+
+    font-size: 1rem;
+    color: white;
+    text-align:end;
+    padding-right: 30%;
+    font-family: 'Vazirmatn';
+}
+
+.bigbox{
+    width: 100%;
+    height:60%;
+    border-style:groove;
+    border: 2px hidden #1A501A;  
+    border-radius: 5px;  
+}
+.line{
+    width: 2px;
+    height: auto;
+    background-color: #7EAE74; 
+}
+.carts{
+    display: flex;
+    flex-direction: row;
+    height: 70%;
+}
+.left_up_row{
+    display: flex;
+    flex-direction: row;
+    height: 30%;
+}
+.left_buttn_row{
+    display: flex;
+    flex-direction: row;
+    height: 70%;
+}
+.box{
+    width: 50%;
+    height: 100%;
+    border: 2px solid #7EAE74;
+    margin-top: 1%;
+    margin-left: 20px;
+    margin-right: 20px;
+    border-radius: 10px;
+}
+.btt_box{
+    width: 100%;
+    height: 83%;
+    border: 2px solid #7EAE74;
+    margin-top: 5%;
+    margin-left: 20px;
+    margin-right: 20px;
+    border-radius: 10px;
+}
