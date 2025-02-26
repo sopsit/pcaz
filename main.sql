@@ -283,6 +283,7 @@ DECLARE temp_price DOUBLE;
 DECLARE  current_code INT ; 
 DECLARE current_amount DOUBLE;
 DECLARE current_limit DOUBLE;
+DECLARE done BOOLEAN DEFAULT FALSE;
 DECLARE L_code CURSOR FOR SELECT ACode FROM Applied_To A 
 WHERE A.Cart_number = Cart_num AND A.Locked_number = Locked_num AND A.id = client_id ORDER BY A.Apply_Time ;
 DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
@@ -335,6 +336,7 @@ BEGIN
      DECLARE cur_cart_number INT;
      DECLARE cur_locked_cart_number INT;
      DECLARE Price DOUBLE;
+     DECLARE done BOOLEAN DEFAULT FALSE;
 	 DECLARE cart_list CURSOR FOR SELECT  I.id ,  I.Cart_number ,  I.Locked_number 
      FROM VIP_Clients VIP , Issued_For I , Transactions T 
      WHERE VIP.id=I.id AND I.Tracking_code = T.Tracking_code AND T.T_Status='Successful' AND
@@ -359,8 +361,58 @@ BEGIN
     CLOSE cart_list;
     
 END; //
-     
-     
+
+CREATE PROCEDURE restore_products_and_block_carts() 
+BEGIN
+
+       DECLARE client_id INT;
+       DECLARE c_num INT;
+       DECLARE c_locked_num INT;
+       DECLARE p_id INT;
+       DECLARE product_quantity INT;
+       DECLARE done BOOLEAN DEFAULT FALSE;
+       DECLARE product_cart_list CURSOR FOR SELECT  A.id , A.Cart_number , A.Locked_number , A.Product_ID , A.Quantity
+		FROM    Added_To A
+		JOIN    Locked_Shopping_Cart L ON  A.id=L.id AND A.Cart_number=L.Cart_Number AND A.Locked_number=L.Locked_Cart_Number
+		JOIN    ( SELECT id , Cart_Number , MAX(Locked_Time) AS Latest_time FROM Locked_Shopping_Cart GROUP BY id , Cart_Number ) AS L_cart 
+				 ON L_cart.id=L.id AND L_cart.Cart_Number = L.Cart_Number AND L_cart.Latest_time= L.Locked_Time
+		JOIN    Shopping_Cart S  ON  L_cart.id=S.id AND  L_cart.id.Cart_Number = S.Cart_Number
+		WHERE   S.Cart_Status = 'locked' AND L.Locked_Time < NOW() - INTERVAL 3 DAY;
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+        
+        
+       OPEN product_cart_list;
+       pc_loop : LOOP
+               FETCH NEXT FROM product_cart_list INTO client_id , c_num , c_locked_num , p_id , product_quantity ;
+               IF done THEN LEAVE pc_loop;
+               END IF;   
+   
+               UPDATE Product 
+               SET    Stock_count = Stock_count + product_quantity
+               WHERE  id = p_id ;
+               
+               UPDATE Shopping_Cart
+               SET    Cart_Status = 'blocked' 
+               WHERE  id=client_id AND Cart_Number = c_num ; 
+
+       END LOOP;
+       CLOSE product_cart_list;
+
+END; // 
+
+CREATE PROCEDURE check_blocking_cart ( new_client_id INT , new_cart_num INT )
+BEGIN
+        DECLARE CartStatus ENUM ( 'active' ,
+							      'blocked' ,
+							       'locked' );
+       
+       SELECT Cart_Status INTO CartStatus FROM Shopping_Cart S WHERE S.id = new_client_id AND S.Cart_Number = new_cart_num ;
+       
+       IF ( CartStatus = 'blocked' ) THEN
+           	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'This cart is blocked !';
+	 END IF;
+END; //
 -- ----------------------- TRIGGER ----------------------------
 
 CREATE TRIGGER add_cart_for_clients AFTER INSERT ON clients  FOR EACH ROW
@@ -368,6 +420,34 @@ BEGIN
        -- Cart_Status --> DEFAULT active
        INSERT INTO Shopping_Cart ( id , Cart_Number )
        VALUES (NEW.id , 1 ) ;
+END; //
+
+
+CREATE TRIGGER add_cart_for_VIP_clients AFTER INSERT ON VIP_Clients  FOR EACH ROW
+BEGIN
+        -- Cart_Status --> DEFAULT active
+        INSERT INTO Shopping_Cart ( id , Cart_Number )   
+                    VALUES  (NEW.id , 2 ) ,
+						    (NEW.id , 3 ) ,
+                            (NEW.id , 4 ) ,
+                            (NEW.id , 5 )  ;
+END; //
+
+CREATE TRIGGER check_blocked_cart_in_Added_To BEFORE INSERT ON Added_To FOR EACH ROW
+BEGIN
+
+    
+      CALL check_blocking_cart ( NEW.id , NEW.Cart_number ) ;
+    
+END; //
+
+
+CREATE TRIGGER check_blocked_cart_in_Issued_For BEFORE INSERT ON Issued_For FOR EACH ROW
+BEGIN
+
+    
+      CALL check_blocking_cart ( NEW.id , NEW.Cart_number ) ;
+    
 END; //
 
 
@@ -419,16 +499,9 @@ END; //
 CREATE TRIGGER check_blocked_cart_in_Applied_To BEFORE INSERT ON Applied_To FOR EACH ROW
 BEGIN
 
-    DECLARE CartStatus ENUM ( 'active' ,
-							  'blocked' ,
-							  'locked' );
-       
-       SELECT Cart_Status INTO CartStatus FROM Shopping_Cart S WHERE S.id = NEW.id AND S.Cart_Number = NEW.Cart_number ;
-       
-       IF ( CartStatus = 'blocked' ) THEN
-           	SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = 'This cart is not blocked ! you cant apply discount code.';
-	 END IF;
+    
+      CALL check_blocking_cart ( NEW.id , NEW.Cart_number ) ;
+    
 END; //
 
 CREATE TRIGGER management_of_referral AFTER INSERT ON  refers FOR EACH ROW 
@@ -508,6 +581,10 @@ BEGIN
           SET  Subscription_expiration_time = DATE_ADD(NOW() , INTERVAL 1 MONTH )
           WHERE VIP.ID = NEW.id;
           
+          UPDATE Shopping_Cart S
+          SET    Cart_Status = 'active'
+          WHERE  S.id = NEW.id AND ( Cart_Number >=2 AND Cart_Number <= 5 ) ;
+          
 	  ELSE
           INSERT INTO VIP_Clients ( id , Subscription_expiration_time )
           VALUES ( NEW.id , DATE_ADD(NOW() , INTERVAL 1 MONTH ) );
@@ -515,6 +592,7 @@ BEGIN
     
 END; //
 
+		     
 CREATE TRIGGER decrease_wallet_for_sub AFTER INSERT ON Subscribes FOR EACH ROW
 BEGIN
            DECLARE TStatus ENUM  ( 'Successful',
@@ -599,6 +677,8 @@ BEGIN
 
 END; //
 
+
+
         
 
 -- ------------------------ EVENT --------------------------
@@ -612,13 +692,45 @@ ON SCHEDULE
 	ON COMPLETION PRESERVE
 DO
     CALL add_15percent_of_vip_clients() ;    
+    
+
+
+CREATE EVENT check_VIP_end
+ON SCHEDULE
+	EVERY 1 DAY STARTS
+	CURRENT_DATE + INTERVAL 1 DAY
+	ON COMPLETION PRESERVE
+DO
+
+    UPDATE  Shopping_Cart
+    SET     Cart_Status =  'blocked' 
+    WHERE   ( Cart_Number >= 2 AND Cart_Number <= 5 ) AND Cart_Status <> 'locked' AND 
+			id IN ( SELECT V.id FROM VIP_Clients V WHERE  V.Subscription_expiration_time < NOW() ) ;
+            
 
 
         
+CREATE EVENT block_after_3days
+ON SCHEDULE
+	EVERY 1 DAY STARTS
+	CURRENT_DATE + INTERVAL 1 DAY
+	ON COMPLETION PRESERVE
+DO
+   
+    CALL restore_products_and_block_carts();
+    
 
-
-
-       
+CREATE EVENT unlock_after_7days
+ON SCHEDULE
+	EVERY 1 DAY STARTS
+	CURRENT_DATE + INTERVAL 1 DAY
+	ON COMPLETION PRESERVE
+DO
+    UPDATE Shopping_Cart S
+    JOIN ( SELECT id , Cart_Number , MAX(Locked_Time) AS Latest_time FROM Locked_Shopping_Cart GROUP BY id , Cart_Number) AS L_cart
+    ON S.id = L_cart.id AND S.Cart_Number=L_cart.Cart_Number
+    SET    S.Cart_Status = 'active' 
+    WHERE  S.Cart_Status='blocked' AND L_cart.Latest_time < NOW() - INTERVAL 10 DAY AND S.id NOT IN ( SELECT V.id FROM VIP_Clients V WHERE  V.Subscription_expiration_time < NOW() ) ;
                               
 
 
