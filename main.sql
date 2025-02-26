@@ -691,8 +691,9 @@ ON SCHEDULE
 	CURRENT_DATE + INTERVAL 1 MONTH
 	ON COMPLETION PRESERVE
 DO
+BEGIN
     CALL add_15percent_of_vip_clients() ;    
-    
+END; //    
 
 
 CREATE EVENT check_VIP_end
@@ -701,13 +702,13 @@ ON SCHEDULE
 	CURRENT_DATE + INTERVAL 1 DAY
 	ON COMPLETION PRESERVE
 DO
-
+BEGIN
     UPDATE  Shopping_Cart
     SET     Cart_Status =  'blocked' 
     WHERE   ( Cart_Number >= 2 AND Cart_Number <= 5 ) AND Cart_Status <> 'locked' AND 
 			id IN ( SELECT V.id FROM VIP_Clients V WHERE  V.Subscription_expiration_time < NOW() ) ;
             
-
+END; //
 
         
 CREATE EVENT block_after_3days
@@ -716,9 +717,9 @@ ON SCHEDULE
 	CURRENT_DATE + INTERVAL 1 DAY
 	ON COMPLETION PRESERVE
 DO
-   
+BEGIN
     CALL restore_products_and_block_carts();
-    
+END; //    
 
 CREATE EVENT unlock_after_7days
 ON SCHEDULE
@@ -726,11 +727,14 @@ ON SCHEDULE
 	CURRENT_DATE + INTERVAL 1 DAY
 	ON COMPLETION PRESERVE
 DO
+BEGIN
     UPDATE Shopping_Cart S
     JOIN ( SELECT id , Cart_Number , MAX(Locked_Time) AS Latest_time FROM Locked_Shopping_Cart GROUP BY id , Cart_Number) AS L_cart
     ON S.id = L_cart.id AND S.Cart_Number=L_cart.Cart_Number
     SET    S.Cart_Status = 'active' 
-    WHERE  S.Cart_Status='blocked' AND L_cart.Latest_time < NOW() - INTERVAL 10 DAY AND S.id NOT IN ( SELECT V.id FROM VIP_Clients V WHERE  V.Subscription_expiration_time < NOW() ) ;
-                              
+    WHERE  S.Cart_Status='blocked' AND L_cart.Latest_time < NOW() - INTERVAL 10 DAY AND 
+    ( S.Cart_Number = 1 OR (S.Cart_Number <> 1 AND S.id NOT IN ( SELECT V.id FROM VIP_Clients V WHERE  V.Subscription_expiration_time < NOW())) ) ;
+
+END; //
 
 
