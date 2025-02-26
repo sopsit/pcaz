@@ -12,7 +12,7 @@ import (
 
 func main() {
 	
-		dsn := "root:zaelneaysa55@tcp(127.0.0.1:3306)/pcaz"
+		dsn := "root:sanativanamazhayash@@tcp(127.0.0.1:3306)/pcaz"
 	// Open database connection
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
