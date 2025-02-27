@@ -1,1 +1,3 @@
-# HTTP handlers (for API)
+// HTTP handlers (for API)
+
+package handlers

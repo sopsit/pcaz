@@ -1,1 +1,0 @@
-# Queries (Insert, Select, Update, Delete)

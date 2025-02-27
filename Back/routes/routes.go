@@ -1,1 +1,3 @@
-# API route definitions
+// API route definitions
+
+package routes

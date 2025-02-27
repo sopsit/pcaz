@@ -3,16 +3,19 @@
 package main
 
 import (
+	//"database/sql"
 	"log"
+	"myproject/configdb"
 	"net/http"
-	"myapp/config"
-	"myapp/routes"
+	//"myproject/routes"  not use yet
 )
 
-func main() {
+//var db *sql.DB 
 
-	config.ConnectDB()
-	routes.SetupRoutes()
+func main() {
+// return db , err
+    configdb.Connect_db()
+//	routes.SetupRoutes()
 
 	log.Println("Server running on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
