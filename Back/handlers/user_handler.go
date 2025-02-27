@@ -6,7 +6,7 @@ import (
     "database/sql"
     "net/http"
     "github.com/gin-gonic/gin"
-    "github.com/sopsit/myproject/handlers"
+    "github.com/sopsit/myproject/user_handler"
 )
 
 // GetUsers handles GET /users request
