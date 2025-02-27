@@ -3,10 +3,9 @@
 package user_handler
 
 import (
-    "database/sql"
     "net/http"
     "github.com/gin-gonic/gin"
-    "github.com/sopsit/myproject/user_handler"
+    "github.com/sopsit/pcaz/user_handler"
 )
 
 // GetUsers handles GET /users request

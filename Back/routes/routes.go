@@ -5,7 +5,7 @@ package routes
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/sopsit/myproject/user_handler"
+    "github.com/sopsit/pcaz/user_handler"
 )
 
 func SetupRouter() *gin.Engine {

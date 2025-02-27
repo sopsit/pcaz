@@ -1,4 +1,4 @@
-module github.com/sopsit/myproject
+module github.com/sopsit/pcaz
 
 go 1.24.0
 

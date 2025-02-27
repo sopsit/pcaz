@@ -5,8 +5,8 @@ package main
 import (
 	//"database/sql"
 	//"log"
-	"github.com/sopsit/myproject/configdb"
-    "github.com/sopsit/myproject/routes"
+	"github.com/sopsit/pcaz/configdb"
+    "github.com/sopsit/pcaz/routes"
 )
 
 
