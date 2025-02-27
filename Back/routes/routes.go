@@ -1,11 +1,10 @@
 // API route definitions
 
-
 package routes
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/sopsit/pcaz/user_handler"
+    "myproject/handlers"
 )
 
 func SetupRouter() *gin.Engine {

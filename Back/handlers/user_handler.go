@@ -1,11 +1,13 @@
 // HTTP handlers (for API)
 
-package user_handler
+package handlers
 
 import (
+    //"database/sql"
     "net/http"
+
     "github.com/gin-gonic/gin"
-    "github.com/sopsit/pcaz/user_handler"
+    "myproject/configdb" 
 )
 
 // GetUsers handles GET /users request
@@ -27,6 +29,7 @@ func GetUsers(c *gin.Context) {
 
     c.JSON(http.StatusOK, users)
 }
+
 // CreateUser handles POST /users request
 func CreateUser(c *gin.Context) {
     var user struct {
