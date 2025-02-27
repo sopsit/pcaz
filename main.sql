@@ -1,14 +1,14 @@
 
-CREATE DATABASE peysaz;
+CREATE DATABASE pcaz;
 
-USE peysaz;
+USE pcaz;
 
 CREATE TABLE clients 
              ( id         			INT       PRIMARY KEY			AUTO_INCREMENT ,
                Phone_number         CHAR(11)            NOT NULL       UNIQUE ,
                First_name           VARCHAR(30)         NOT NULL       ,
                Last_name            VARCHAR(30)         NOT NULL       ,
-               Wallet_balance       INT                 NOT NULL      DEFAULT 0  CHECK(Wallet_balance >= 0),
+               Wallet_balance       DOUBLE                 NOT NULL      DEFAULT 0  CHECK(Wallet_balance >= 0),
                C_time               DATETIME            NOT NULL      DEFAULT CURRENT_TIMESTAMP ,
                Referral_code        VARCHAR(20)         NOT NULL      UNIQUE );
 
@@ -21,7 +21,7 @@ CREATE TABLE address
 
 CREATE TABLE VIP_Clients
 			( id        INT           PRIMARY KEY ,
-              Subscription_expiration_time    DATETIME      NOT NULL   ,
+              Subscription_expiration_time    DATETIME      NOT NULL  DEFAULT (CURRENT_TIMESTAMP + INTERVAL 1 MONTH)  ,
               FOREIGN KEY(id)	REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE  );
 
 CREATE TABLE refers 
@@ -246,7 +246,7 @@ CREATE TABLE RM_SLOT_COMPATIBLE_WITH
 			 (  Ram_ID	 			INT , 
 				Motherboard_ID       INT, 
 				PRIMARY KEY (Motherboard_ID, Ram_ID), 
-				FOREIGN KEY(Ram_ID ) REFERENCES CPU_P(id) ON UPDATE CASCADE ON DELETE CASCADE,
+				FOREIGN KEY(Ram_ID ) REFERENCES RAM_STICK(id) ON UPDATE CASCADE ON DELETE CASCADE,
 				FOREIGN KEY(Motherboard_ID ) REFERENCES MOTHERBOARD(id) ON UPDATE CASCADE ON DELETE CASCADE);
                 
 CREATE TABLE GM_SLOT_COMPATIBLE_WITH
@@ -326,7 +326,7 @@ BEGIN
           
          -- Code_Time --> DEFAULT CURRENT_TIMESTAMP
           INSERT INTO  Private_Code ( Private_DCode , id  )
-          VALUES ( new_cod , client_id );
+          VALUES ( new_code , client_id );
 
 END; //
 
@@ -433,6 +433,15 @@ BEGIN
                             (NEW.id , 5 )  ;
 END; //
 
+CREATE TRIGGER locked_cart AFTER INSERT ON Locked_Shopping_Cart  FOR EACH ROW
+BEGIN
+         UPDATE Shopping_Cart S
+         SET    S.Cart_Status = 'locked'
+         WHERE  S.id = NEW.id AND S.Cart_Number = NEW.Cart_Number;
+
+END; //
+
+
 CREATE TRIGGER check_blocked_cart_in_Added_To BEFORE INSERT ON Added_To FOR EACH ROW
 BEGIN
 
@@ -461,7 +470,7 @@ DECLARE Price  DOUBLE ;
                             
 SELECT T_Status INTO TStatus FROM Transactions T WHERE NEW.Tracking_code =T.Tracking_code;
 IF TStatus = 'Successful' AND EXISTS (SELECT 1 FROM Wallet_Transactions W WHERE W.Tracking_code = NEW.Tracking_code) THEN 
-CALL calculate_price(NEW.id , NEW.Cart_number, NEW.Locked_number , price);
+ CALL calculate_price(NEW.id , NEW.Cart_number, NEW.Locked_number , price);
 UPDATE clients c
 SET Wallet_balance = Wallet_balance - price
 WHERE c.id = NEW.id;
