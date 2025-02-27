@@ -3,18 +3,16 @@
 package configdb
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
-
-	_ "github.com/go-sql-driver/mysql"
+    "database/sql"
+    "fmt"
+    "log"
+    _ "github.com/go-sql-driver/mysql"
 )
-
 var db *sql.DB
 
 func Connect_db() (*sql.DB, error) {
 
-	dsn := "root:zaelneaysa55@tcp(127.0.0.1:3306)/pcaz"
+	dsn := "root:sanativanamazhayash@@tcp(127.0.0.1:3306)/pcaz"
 	var err error
 	// Open database connection
 	db, err = sql.Open("mysql", dsn)
