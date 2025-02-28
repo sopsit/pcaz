@@ -14,7 +14,7 @@ var DB *sql.DB
 
 func Connect_db() (*sql.DB, error) {
 
-	dsn := "root:sanativanamazhayash@@tcp(127.0.0.1:3306)/pcaz"
+	dsn := "root:zaelneaysa55@tcp(127.0.0.1:3306)/pcaz"
 	var err error
 	// Open database connection
 	DB, err = sql.Open("mysql", dsn)
@@ -22,7 +22,7 @@ func Connect_db() (*sql.DB, error) {
 		log.Fatal("Error connecting to the database:", err)
 		return nil, err
 	}
-	defer DB.Close()
+	//defer DB.Close()
 
 	// Test the connection
 	err = DB.Ping()

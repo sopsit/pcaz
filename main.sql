@@ -8,7 +8,7 @@ CREATE TABLE clients
                Phone_number         CHAR(11)            NOT NULL       UNIQUE ,
                First_name           VARCHAR(30)         NOT NULL       ,
                Last_name            VARCHAR(30)         NOT NULL       ,
-               Wallet_balance       DOUBLE                 NOT NULL      DEFAULT 0  CHECK(Wallet_balance >= 0),
+               Wallet_balance       FLOAT8                 NOT NULL      DEFAULT 0  CHECK(Wallet_balance >= 0),
                C_time               DATETIME            NOT NULL      DEFAULT CURRENT_TIMESTAMP ,
                Referral_code        VARCHAR(20)         NOT NULL      UNIQUE );
 
@@ -78,7 +78,7 @@ CREATE TABLE  Issued_For
 CREATE TABLE  Deposits_Into_Wallet
               ( Tracking_code   VARCHAR(20)          PRIMARY KEY  ,
                 id              INT  NOT NULL ,
-                Amount          INT          NOT NULL    CHECK(Amount > 0) ,
+                Amount           FLOAT8           NOT NULL    CHECK(Amount > 0) ,
 			    FOREIGN KEY(Tracking_code) REFERENCES Bank_Transactions(Tracking_code)	ON UPDATE CASCADE	ON DELETE CASCADE ); 
                 
 CREATE TABLE  Subscribes 
@@ -89,8 +89,8 @@ CREATE TABLE  Subscribes
                 
 CREATE TABLE Discount_Code 
              ( Dis_Code          INT           PRIMARY KEY AUTO_INCREMENT , 
-               Amount            FLOAT         NOT NULL    CHECK(Amount > 0 ) ,
-               Dis_Limit         FLOAT         NOT NULL    CHECK(Dis_Limit > 0 ) ,
+               Amount             FLOAT8          NOT NULL    CHECK(Amount > 0 ) ,
+               Dis_Limit          FLOAT8         NOT NULL    CHECK(Dis_Limit > 0 ) ,
                Usage_count       INT           NOT NULL    DEFAULT 1  CHECK(Usage_count > 0 )   ,
                Expiration_date   DATETIME    );
               
@@ -109,7 +109,7 @@ CREATE TABLE  Product
               ( id         			INT            PRIMARY KEY   AUTO_INCREMENT , 
                 Category  			VARCHAR(20)     NOT NULL   ,
                 Image     			BLOB ,
-                Current_price   	INT      NOT NULL    CHECK ( Current_price > 0 ) ,
+                Current_price   	FLOAT8       NOT NULL    CHECK ( Current_price > 0 ) ,
                 Stock_count     	INT      NOT NULL    CHECK(Stock_count >= 0 ) ,
                 Brand           	VARCHAR(30)    NOT NULL  ,
                 Model           	VARCHAR(30)    NOT NULL );
@@ -120,7 +120,7 @@ CREATE TABLE  Added_To
                  Locked_number  INT ,
                  Product_ID     INT ,
                  Quantity       INT     NOT NULL  DEFAULT 1  CHECK ( Quantity > 0 ) ,
-                 Cart_price     INT     NOT NULL  CHECK(Cart_price > 0),
+                 Cart_price     FLOAT8      NOT NULL  CHECK(Cart_price > 0),
                  PRIMARY KEY (id , Cart_number , Locked_number ,  Product_ID) ,
                  FOREIGN KEY(id , Cart_number , Locked_number ) REFERENCES Locked_Shopping_Cart(id , Cart_Number , Locked_Cart_Number ) ON UPDATE CASCADE ON DELETE CASCADE,
                  FOREIGN KEY(Product_ID)  REFERENCES Product(id) ON UPDATE CASCADE ON DELETE RESTRICT );
@@ -277,12 +277,12 @@ DELIMITER //
 
 -- ------------ PROCEDURE -------------- 
 
-CREATE PROCEDURE calculate_price (client_id INT , Cart_num INT , Locked_num INT , OUT total_price DOUBLE) 
+CREATE PROCEDURE calculate_price (client_id INT , Cart_num INT , Locked_num INT , OUT total_price  FLOAT8) 
 BEGIN  
-DECLARE temp_price DOUBLE;
+DECLARE temp_price  FLOAT8 ;
 DECLARE  current_code INT ; 
-DECLARE current_amount DOUBLE;
-DECLARE current_limit DOUBLE;
+DECLARE current_amount  FLOAT8 ;
+DECLARE current_limit  FLOAT8 ;
 DECLARE done BOOLEAN DEFAULT FALSE;
 DECLARE L_code CURSOR FOR SELECT ACode FROM Applied_To A 
 WHERE A.Cart_number = Cart_num AND A.Locked_number = Locked_num AND A.id = client_id ORDER BY A.Apply_Time ;
@@ -314,7 +314,7 @@ SET total_price = temp_price ;
 END IF;
 END; //
 
-CREATE PROCEDURE Add_dicount_code ( client_id INT , new_amount DOUBLE , new_limit DOUBLE )
+CREATE PROCEDURE Add_dicount_code ( client_id INT , new_amount  FLOAT8  , new_limit  FLOAT8  )
 BEGIN
 
 		 DECLARE  new_code INT;
@@ -335,7 +335,7 @@ BEGIN
      DECLARE VIP_client_id INT;
      DECLARE cur_cart_number INT;
      DECLARE cur_locked_cart_number INT;
-     DECLARE Price DOUBLE;
+     DECLARE Price  FLOAT8 ;
      DECLARE done BOOLEAN DEFAULT FALSE;
 	 DECLARE cart_list CURSOR FOR SELECT  I.id ,  I.Cart_number ,  I.Locked_number 
      FROM VIP_Clients VIP , Issued_For I , Transactions T 
@@ -466,7 +466,7 @@ BEGIN
 DECLARE TStatus ENUM  ( 'Successful',
 							'UnSuccessful' ,
 							'Partially_Successful') ;
-DECLARE Price  DOUBLE ;
+DECLARE Price   FLOAT8  ;
                             
 SELECT T_Status INTO TStatus FROM Transactions T WHERE NEW.Tracking_code =T.Tracking_code;
 IF TStatus = 'Successful' AND EXISTS (SELECT 1 FROM Wallet_Transactions W WHERE W.Tracking_code = NEW.Tracking_code) THEN 
@@ -517,8 +517,8 @@ CREATE TRIGGER management_of_referral AFTER INSERT ON  refers FOR EACH ROW
 BEGIN 
 	   DECLARE  r_id INT;
        DECLARE  current_level INT DEFAULT 1;
-       DECLARE  temp_amount DOUBLE;
-	   DECLARE  temp_limit DOUBLE;
+       DECLARE  temp_amount  FLOAT8 ;
+	   DECLARE  temp_limit  FLOAT8 ;
        
        CALL Add_dicount_code (NEW.Referee , 50 , 1000000 );
        

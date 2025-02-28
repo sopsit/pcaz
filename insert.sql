@@ -8,10 +8,10 @@ VALUES
 
 INSERT INTO address (id, Province, Remainder)
 VALUES 
-(1, 'Tehran', '123 miad Street'),
+-- (1, 'Tehran', '123 miad Street'),
 (2, 'Hamedan', 'Ostadan Street'),
-(3, 'Zanjan', '789 Mehrane Street');
-
+(3, 'Zanjan', '789 Mehrane Street'),
+(3 , 'Zanjan' , '790 Mehrane Street') ;
 
 INSERT INTO refers (Referee, Referrer)
 VALUES 
