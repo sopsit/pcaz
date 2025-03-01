@@ -12,18 +12,13 @@ import (
 
 func GetClientInfo(Phonenum string) (*structure.Client, error) {
 
-	db, err_1 := configdb.Connect_db()
-	if err_1 != nil {
-		return nil, errors.New("cant connect to database! ")
-	}
-
-	defer db.Close()
+	Database := configdb.Get_database()
 
 	var ClientInfo structure.Client
 
 	query := " SELECT * FROM clients WHERE Phone_number = ? "
 
-	row := db.QueryRow(query, Phonenum)
+	row := Database.QueryRow(query, Phonenum)
 	err := row.Scan(&ClientInfo.Cid, &ClientInfo.PhoneNumber, &ClientInfo.Name, &ClientInfo.LastName, &ClientInfo.WalletBalance,
 		&ClientInfo.SignupTime, &ClientInfo.ReferralCode)
 
@@ -38,50 +33,121 @@ func GetClientInfo(Phonenum string) (*structure.Client, error) {
 
 }
 
+func Is_VIP(userId int) (*bool, error) {
+
+	Database := configdb.Get_database()
+
+	var clientId int
+	var ISVIP bool = false
+
+	query := " SELECT id FROM VIP_Clients WHERE id=? AND Subscription_expiration_time >= NOW() "
+	row := Database.QueryRow(query, userId)
+	err := row.Scan(&clientId)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &ISVIP, nil
+		}
+		return nil, err
+	}
+
+	ISVIP = true
+
+	return &ISVIP, nil
+
+}
+
 func Getaddress(userId int) ([]string, error) {
 
-	db, err_1 := configdb.Connect_db()
-	if err_1 != nil {
-		return nil, errors.New("cant connect to database! ")
-	}
-
-	defer db.Close()
+	Database := configdb.Get_database()
 
 	query := " SELECT Province , Remainder FROM address WHERE id=? "
-	row, err_2 := db.Query(query, userId)
+	row, err1 := Database.Query(query, userId)
 
-	if err_2 != nil {
-		if err_2 == sql.ErrNoRows {
-			return nil, errors.New(" No adress found. ")
-		}
-		return nil, err_2
+	if err1 != nil {
+
+		return nil, err1
 	}
+
+	defer row.Close()
 
 	var add []string
 
 	for row.Next() {
 
 		var province, remainder string
-		err_3 := row.Scan(&province, &remainder)
-		if err_3 != nil {
-			return nil, err_3
+		err2 := row.Scan(&province, &remainder)
+		if err2 != nil {
+			return nil, err2
 		}
 		temp := "Province:" + province + " Remainder:" + remainder
 		add = append(add, temp)
 
 	}
 
+	if len(add) == 0 {
+		return nil, errors.New(" No adress found. ")
+	}
+
 	return add, nil
+
+}
+
+
+func GetPrivateDiscountCode(userID int) ([]structure.DiscountCode, error) {
+
+	Database := configdb.Get_database()
+
+	query := ` SELECT Dis_Code , Amount , Dis_Limit , Usage_count , Expiration_date , Code_Time
+	           FROM Discount_Code JOIN Private_Code ON Dis_Code=Private_DCode
+			   WHERE id = ? AND  (Expiration_date >= NOW() AND Expiration_date <= (NOW() + INTERVAL 7 DAY )) `
+
+	row, err1 := Database.Query(query, userID)
+
+	if err1 != nil {
+		return nil, err1
+	}
+
+	defer row.Close()
+
+	var privateCodeList []structure.DiscountCode
+
+	for row.Next() {
+
+		var discode structure.DiscountCode
+		err2 := row.Scan(&discode.Code, &discode.CodeAmount, &discode.Limit, &discode.UseCount,
+			&discode.ExpirationDate, &discode.CTime)
+		if err2 != nil {
+			return nil, err2
+		}
+		privateCodeList = append(privateCodeList, discode)
+	}
+
+	if len(privateCodeList) == 0 {
+		return nil, errors.New(" No PrivateDiscountCode found. ")
+	}
+
+	return privateCodeList, nil
 
 }
 
 func main() {
 
-	// res , err := GetClientInfo("09183455290")
+	configdb.Connect_db()
 
-	//fmt.Println(res , err)
+	defer configdb.Get_database().Close()
 
-	res1, err1 := Getaddress(3)
-	fmt.Println(res1, err1)
+	  res , err := GetClientInfo("09123459587")
 
+	 fmt.Println(res , err)
+
+	// id := res.Cid
+
+	// res1, err1 := Getaddress(1)
+	
+	// res2 , err2 := Is_VIP(1)
+	
+	//res3 , err3 := GetPrivateDiscountCode(1)
+
+	
 }

@@ -89,14 +89,14 @@ CREATE TABLE  Subscribes
                 
 CREATE TABLE Discount_Code 
              ( Dis_Code          INT           PRIMARY KEY AUTO_INCREMENT , 
-               Amount            FLOAT         NOT NULL    CHECK(Amount > 0 ) ,
-               Dis_Limit         FLOAT         NOT NULL    CHECK(Dis_Limit > 0 ) ,
+               Amount            FLOAT8         NOT NULL    CHECK(Amount > 0 ) ,
+               Dis_Limit         FLOAT8        NOT NULL    CHECK(Dis_Limit > 0 ) ,
                Usage_count       INT           NOT NULL    DEFAULT 1  CHECK(Usage_count > 0 )   ,
                Expiration_date   DATETIME    );
               
 CREATE TABLE Private_Code 
              ( Private_DCode      INT         PRIMARY KEY ,
-			   id                 INT         NOT NULL    ,
+			          id                 INT         NOT NULL    ,
                Code_Time          DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP ,
                FOREIGN KEY(Private_DCode) REFERENCES Discount_Code(Dis_Code)  ON UPDATE CASCADE	ON DELETE CASCADE ,
                FOREIGN KEY(id)	REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE );

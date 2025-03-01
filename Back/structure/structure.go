@@ -11,3 +11,14 @@ type Client struct {
 	ReferralCode   string
     
 }
+
+type DiscountCode struct {
+  
+	Code       int
+	CodeAmount float64
+	Limit      float64
+	UseCount   int
+	CTime      string 
+    ExpirationDate string
+	
+}
