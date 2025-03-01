@@ -10,6 +10,24 @@ import (
 	"myproject/structure"
 )
 
+func AddClient (newclient structure.Client) error {
+
+	Database := configdb.Get_database()
+
+	query := ` INSERT INTO clients (Phone_number, First_name, Last_name, Wallet_balance, Referral_code)
+	           VALUES (? , ? , ? , ? , ?) `
+	
+	_ , err := Database.Exec(query , newclient.PhoneNumber , newclient.Name , newclient.LastName , newclient.WalletBalance ,
+		newclient.ReferralCode)	
+		
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func GetClientInfo(Phonenum string) (*structure.Client, error) {
 
 	Database := configdb.Get_database()
@@ -93,6 +111,28 @@ func Getaddress(userId int) ([]string, error) {
 
 }
 
+func GetCountOfReferredClient (userId int) (*int , error) {
+
+	Database := configdb.Get_database()
+	var count int
+
+	query := ` SELECT COUNT(*) FROM refers WHERE Referrer= ? `
+    
+	row := Database.QueryRow(query , userId)
+	err1 := row.Scan(&count)
+
+	if err1 != nil {
+       if err1 == sql.ErrNoRows {
+		   return nil , errors.New(" No referred client found! ")
+	   }
+	   return nil , err1
+	}
+
+	return &count , nil
+
+
+
+}
 
 func GetPrivateDiscountCode(userID int) ([]structure.DiscountCode, error) {
 
@@ -148,6 +188,9 @@ func main() {
 	// res2 , err2 := Is_VIP(1)
 	
 	//res3 , err3 := GetPrivateDiscountCode(1)
+
+	// res4 , err4 := GetCountOfReferredClient(1)
+	
 
 	
 }

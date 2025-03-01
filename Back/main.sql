@@ -1,14 +1,14 @@
 
-CREATE DATABASE peysaz;
+CREATE DATABASE pcaz;
 
-USE peysaz;
+USE pcaz;
 
 CREATE TABLE clients 
              ( id         			INT       PRIMARY KEY			AUTO_INCREMENT ,
                Phone_number         CHAR(11)            NOT NULL       UNIQUE ,
                First_name           VARCHAR(30)         NOT NULL       ,
                Last_name            VARCHAR(30)         NOT NULL       ,
-               Wallet_balance       INT                 NOT NULL      DEFAULT 0  CHECK(Wallet_balance >= 0),
+               Wallet_balance       FLOAT8                 NOT NULL      DEFAULT 0  CHECK(Wallet_balance >= 0),
                C_time               DATETIME            NOT NULL      DEFAULT CURRENT_TIMESTAMP ,
                Referral_code        VARCHAR(20)         NOT NULL      UNIQUE );
 
@@ -21,7 +21,7 @@ CREATE TABLE address
 
 CREATE TABLE VIP_Clients
 			( id        INT           PRIMARY KEY ,
-              Subscription_expiration_time    DATETIME      NOT NULL   ,
+              Subscription_expiration_time    DATETIME      NOT NULL  DEFAULT (CURRENT_TIMESTAMP + INTERVAL 1 MONTH)  ,
               FOREIGN KEY(id)	REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE  );
 
 CREATE TABLE refers 
@@ -78,7 +78,7 @@ CREATE TABLE  Issued_For
 CREATE TABLE  Deposits_Into_Wallet
               ( Tracking_code   VARCHAR(20)          PRIMARY KEY  ,
                 id              INT  NOT NULL ,
-                Amount          INT          NOT NULL    CHECK(Amount > 0) ,
+                Amount           FLOAT8           NOT NULL    CHECK(Amount > 0) ,
 			    FOREIGN KEY(Tracking_code) REFERENCES Bank_Transactions(Tracking_code)	ON UPDATE CASCADE	ON DELETE CASCADE ); 
                 
 CREATE TABLE  Subscribes 
@@ -89,14 +89,14 @@ CREATE TABLE  Subscribes
                 
 CREATE TABLE Discount_Code 
              ( Dis_Code          INT           PRIMARY KEY AUTO_INCREMENT , 
-               Amount            FLOAT8         NOT NULL    CHECK(Amount > 0 ) ,
-               Dis_Limit         FLOAT8        NOT NULL    CHECK(Dis_Limit > 0 ) ,
+               Amount             FLOAT8          NOT NULL    CHECK(Amount > 0 ) ,
+               Dis_Limit          FLOAT8         NOT NULL    CHECK(Dis_Limit > 0 ) ,
                Usage_count       INT           NOT NULL    DEFAULT 1  CHECK(Usage_count > 0 )   ,
                Expiration_date   DATETIME    );
               
 CREATE TABLE Private_Code 
              ( Private_DCode      INT         PRIMARY KEY ,
-			          id                 INT         NOT NULL    ,
+			   id                 INT         NOT NULL    ,
                Code_Time          DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP ,
                FOREIGN KEY(Private_DCode) REFERENCES Discount_Code(Dis_Code)  ON UPDATE CASCADE	ON DELETE CASCADE ,
                FOREIGN KEY(id)	REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE );
@@ -109,7 +109,7 @@ CREATE TABLE  Product
               ( id         			INT            PRIMARY KEY   AUTO_INCREMENT , 
                 Category  			VARCHAR(20)     NOT NULL   ,
                 Image     			BLOB ,
-                Current_price   	INT      NOT NULL    CHECK ( Current_price > 0 ) ,
+                Current_price   	FLOAT8       NOT NULL    CHECK ( Current_price > 0 ) ,
                 Stock_count     	INT      NOT NULL    CHECK(Stock_count >= 0 ) ,
                 Brand           	VARCHAR(30)    NOT NULL  ,
                 Model           	VARCHAR(30)    NOT NULL );
@@ -120,7 +120,7 @@ CREATE TABLE  Added_To
                  Locked_number  INT ,
                  Product_ID     INT ,
                  Quantity       INT     NOT NULL  DEFAULT 1  CHECK ( Quantity > 0 ) ,
-                 Cart_price     INT     NOT NULL  CHECK(Cart_price > 0),
+                 Cart_price     FLOAT8      NOT NULL  CHECK(Cart_price > 0),
                  PRIMARY KEY (id , Cart_number , Locked_number ,  Product_ID) ,
                  FOREIGN KEY(id , Cart_number , Locked_number ) REFERENCES Locked_Shopping_Cart(id , Cart_Number , Locked_Cart_Number ) ON UPDATE CASCADE ON DELETE CASCADE,
                  FOREIGN KEY(Product_ID)  REFERENCES Product(id) ON UPDATE CASCADE ON DELETE RESTRICT );
@@ -246,7 +246,7 @@ CREATE TABLE RM_SLOT_COMPATIBLE_WITH
 			 (  Ram_ID	 			INT , 
 				Motherboard_ID       INT, 
 				PRIMARY KEY (Motherboard_ID, Ram_ID), 
-				FOREIGN KEY(Ram_ID ) REFERENCES CPU_P(id) ON UPDATE CASCADE ON DELETE CASCADE,
+				FOREIGN KEY(Ram_ID ) REFERENCES RAM_STICK(id) ON UPDATE CASCADE ON DELETE CASCADE,
 				FOREIGN KEY(Motherboard_ID ) REFERENCES MOTHERBOARD(id) ON UPDATE CASCADE ON DELETE CASCADE);
                 
 CREATE TABLE GM_SLOT_COMPATIBLE_WITH
@@ -277,12 +277,12 @@ DELIMITER //
 
 -- ------------ PROCEDURE -------------- 
 
-CREATE PROCEDURE calculate_price (client_id INT , Cart_num INT , Locked_num INT , OUT total_price DOUBLE) 
+CREATE PROCEDURE calculate_price (client_id INT , Cart_num INT , Locked_num INT , OUT total_price  FLOAT8) 
 BEGIN  
-DECLARE temp_price DOUBLE;
+DECLARE temp_price  FLOAT8 ;
 DECLARE  current_code INT ; 
-DECLARE current_amount DOUBLE;
-DECLARE current_limit DOUBLE;
+DECLARE current_amount  FLOAT8 ;
+DECLARE current_limit  FLOAT8 ;
 DECLARE done BOOLEAN DEFAULT FALSE;
 DECLARE L_code CURSOR FOR SELECT ACode FROM Applied_To A 
 WHERE A.Cart_number = Cart_num AND A.Locked_number = Locked_num AND A.id = client_id ORDER BY A.Apply_Time ;
@@ -314,7 +314,7 @@ SET total_price = temp_price ;
 END IF;
 END; //
 
-CREATE PROCEDURE Add_dicount_code ( client_id INT , new_amount DOUBLE , new_limit DOUBLE )
+CREATE PROCEDURE Add_dicount_code ( client_id INT , new_amount  FLOAT8  , new_limit  FLOAT8  )
 BEGIN
 
 		 DECLARE  new_code INT;
@@ -326,7 +326,7 @@ BEGIN
           
          -- Code_Time --> DEFAULT CURRENT_TIMESTAMP
           INSERT INTO  Private_Code ( Private_DCode , id  )
-          VALUES ( new_cod , client_id );
+          VALUES ( new_code , client_id );
 
 END; //
 
@@ -335,7 +335,7 @@ BEGIN
      DECLARE VIP_client_id INT;
      DECLARE cur_cart_number INT;
      DECLARE cur_locked_cart_number INT;
-     DECLARE Price DOUBLE;
+     DECLARE Price  FLOAT8 ;
      DECLARE done BOOLEAN DEFAULT FALSE;
 	 DECLARE cart_list CURSOR FOR SELECT  I.id ,  I.Cart_number ,  I.Locked_number 
      FROM VIP_Clients VIP , Issued_For I , Transactions T 
@@ -433,6 +433,15 @@ BEGIN
                             (NEW.id , 5 )  ;
 END; //
 
+CREATE TRIGGER locked_cart AFTER INSERT ON Locked_Shopping_Cart  FOR EACH ROW
+BEGIN
+         UPDATE Shopping_Cart S
+         SET    S.Cart_Status = 'locked'
+         WHERE  S.id = NEW.id AND S.Cart_Number = NEW.Cart_Number;
+
+END; //
+
+
 CREATE TRIGGER check_blocked_cart_in_Added_To BEFORE INSERT ON Added_To FOR EACH ROW
 BEGIN
 
@@ -457,11 +466,11 @@ BEGIN
 DECLARE TStatus ENUM  ( 'Successful',
 							'UnSuccessful' ,
 							'Partially_Successful') ;
-DECLARE Price  DOUBLE ;
+DECLARE Price   FLOAT8  ;
                             
 SELECT T_Status INTO TStatus FROM Transactions T WHERE NEW.Tracking_code =T.Tracking_code;
 IF TStatus = 'Successful' AND EXISTS (SELECT 1 FROM Wallet_Transactions W WHERE W.Tracking_code = NEW.Tracking_code) THEN 
-CALL calculate_price(NEW.id , NEW.Cart_number, NEW.Locked_number , price);
+ CALL calculate_price(NEW.id , NEW.Cart_number, NEW.Locked_number , price);
 UPDATE clients c
 SET Wallet_balance = Wallet_balance - price
 WHERE c.id = NEW.id;
@@ -508,8 +517,8 @@ CREATE TRIGGER management_of_referral AFTER INSERT ON  refers FOR EACH ROW
 BEGIN 
 	   DECLARE  r_id INT;
        DECLARE  current_level INT DEFAULT 1;
-       DECLARE  temp_amount DOUBLE;
-	   DECLARE  temp_limit DOUBLE;
+       DECLARE  temp_amount  FLOAT8 ;
+	   DECLARE  temp_limit  FLOAT8 ;
        
        CALL Add_dicount_code (NEW.Referee , 50 , 1000000 );
        
@@ -691,8 +700,9 @@ ON SCHEDULE
 	CURRENT_DATE + INTERVAL 1 MONTH
 	ON COMPLETION PRESERVE
 DO
+BEGIN
     CALL add_15percent_of_vip_clients() ;    
-    
+END; //    
 
 
 CREATE EVENT check_VIP_end
@@ -701,13 +711,13 @@ ON SCHEDULE
 	CURRENT_DATE + INTERVAL 1 DAY
 	ON COMPLETION PRESERVE
 DO
-
+BEGIN
     UPDATE  Shopping_Cart
     SET     Cart_Status =  'blocked' 
     WHERE   ( Cart_Number >= 2 AND Cart_Number <= 5 ) AND Cart_Status <> 'locked' AND 
 			id IN ( SELECT V.id FROM VIP_Clients V WHERE  V.Subscription_expiration_time < NOW() ) ;
             
-
+END; //
 
         
 CREATE EVENT block_after_3days
@@ -716,9 +726,9 @@ ON SCHEDULE
 	CURRENT_DATE + INTERVAL 1 DAY
 	ON COMPLETION PRESERVE
 DO
-   
+BEGIN
     CALL restore_products_and_block_carts();
-    
+END; //    
 
 CREATE EVENT unlock_after_7days
 ON SCHEDULE
@@ -726,11 +736,14 @@ ON SCHEDULE
 	CURRENT_DATE + INTERVAL 1 DAY
 	ON COMPLETION PRESERVE
 DO
+BEGIN
     UPDATE Shopping_Cart S
     JOIN ( SELECT id , Cart_Number , MAX(Locked_Time) AS Latest_time FROM Locked_Shopping_Cart GROUP BY id , Cart_Number) AS L_cart
     ON S.id = L_cart.id AND S.Cart_Number=L_cart.Cart_Number
     SET    S.Cart_Status = 'active' 
-    WHERE  S.Cart_Status='blocked' AND L_cart.Latest_time < NOW() - INTERVAL 10 DAY AND S.id NOT IN ( SELECT V.id FROM VIP_Clients V WHERE  V.Subscription_expiration_time < NOW() ) ;
-                              
+    WHERE  S.Cart_Status='blocked' AND L_cart.Latest_time < NOW() - INTERVAL 10 DAY AND 
+    ( S.Cart_Number = 1 OR (S.Cart_Number <> 1 AND S.id NOT IN ( SELECT V.id FROM VIP_Clients V WHERE  V.Subscription_expiration_time < NOW())) ) ;
+
+END; //
 
 

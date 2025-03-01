@@ -2,13 +2,13 @@ package structure
 
 type Client struct {
 
-    Cid            int
-	PhoneNumber    string
-	Name           string
-    LastName       string       
-    WalletBalance  float64
-	SignupTime     string
-	ReferralCode   string
+    Cid            int        `json:"cid"`
+	PhoneNumber    string     `json:"phonenumber"`
+	Name           string     `json:"name"`
+    LastName       string     `json:"lastname"`
+    WalletBalance  float64    `json:"walletbalance"`
+	SignupTime     string     `json:"signuptime"`
+	ReferralCode   string     `json:"referralcode"`
     
 }
 
