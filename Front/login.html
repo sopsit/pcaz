@@ -88,12 +88,33 @@
                 <label class="txt">welcome back</label>
             </div>
             <div  style="display: flex; flex-direction: row; height:100px; margin-left: 50px;">
-                <input class="box" placeholder="phone number" id="phone-num">
+                <input class="box" placeholder="phone number" id="phone_num">
             </div>
             <div style="display: flex; flex-direction: row; height:100px; margin-left: 50px;">
-                <button id="login" class="login_butt">
+                <button onclick="login()" id="login" class="login_butt">
                     Login
                 </button>
             </div>
         </div>
+        <script>
+            function login() {
+            const phonenumber = document.getElementById("phone_num").value;
+
+            fetch("http://localhost:8080/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({phonenumber})
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = "profile.html"; // Redirect on success
+                } else {
+                    alert("Invalid credentials");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+        </script>
 </bode>

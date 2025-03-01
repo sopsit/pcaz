@@ -1,11 +1,10 @@
 // Queries (Insert, Select, Update, Delete)
 
-package main
+package repositories
 
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"myproject/configdb"
 	"myproject/structure"
 )
@@ -171,26 +170,26 @@ func GetPrivateDiscountCode(userID int) ([]structure.DiscountCode, error) {
 
 }
 
-func main() {
+// func main() {
 
-	configdb.Connect_db()
+// 	configdb.Connect_db()
 
-	defer configdb.Get_database().Close()
+// 	defer configdb.Get_database().Close()
 
-	  res , err := GetClientInfo("09123459587")
+// 	  res , err := GetClientInfo("09123459587")
 
-	 fmt.Println(res , err)
+// 	 fmt.Println(res , err)
 
-	// id := res.Cid
+// 	// id := res.Cid
 
-	// res1, err1 := Getaddress(1)
+// 	// res1, err1 := Getaddress(1)
 	
-	// res2 , err2 := Is_VIP(1)
+// 	// res2 , err2 := Is_VIP(1)
 	
-	//res3 , err3 := GetPrivateDiscountCode(1)
+// 	//res3 , err3 := GetPrivateDiscountCode(1)
 
-	// res4 , err4 := GetCountOfReferredClient(1)
+// 	// res4 , err4 := GetCountOfReferredClient(1)
 	
 
 	
-}
+// }

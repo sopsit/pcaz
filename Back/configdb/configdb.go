@@ -14,7 +14,7 @@ var DB *sql.DB
 
 func Connect_db() (*sql.DB, error) {
 
-	dsn := "root:zaelneaysa55@tcp(127.0.0.1:3306)/pcaz"
+	dsn := "root:sanativanamazhayash@@tcp(127.0.0.1:3306)/pcaz"
 	//var err error
 	// Open database connection
 	 da , err := sql.Open("mysql", dsn)

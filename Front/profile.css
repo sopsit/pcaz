@@ -6,14 +6,14 @@ body {
 .left {
     display: flex;
     flex-direction: column;
-    width: 70%;
+    width: 75%;
     background-color: #181818;
 
 }
 .right {
     display: flex;
     flex-direction: column;
-    width:30%;
+    width:25%;
     background-color:#181818;
 
 }
@@ -63,6 +63,8 @@ body {
     font-size: 1.4rem;
     color: white;
     text-align: center;
+    font-family: 'Vazirmatn';
+
 }
 .rec{
     width: 70%;
@@ -111,9 +113,14 @@ body {
     border: 2px hidden #1A501A;  
     border-radius: 5px;  
 }
-.line{
+.v_line{
     width: 2px;
     height: auto;
+    background-color: #7EAE74; 
+}
+.h_line{
+    height: 2px;
+    width: auto;
     background-color: #7EAE74; 
 }
 .carts{
@@ -124,12 +131,18 @@ body {
 .left_up_row{
     display: flex;
     flex-direction: row;
-    height: 30%;
+    height: 10%;
+    width: 65%;
+    margin-top: 2%;
+    margin-left: 32%;
+    margin-right: 5%;
+    background-color: #7EAE74;
+    border-radius: 10px;
 }
 .left_buttn_row{
     display: flex;
     flex-direction: row;
-    height: 70%;
+    height: 84%;
 }
 .box{
     width: 50%;
@@ -141,11 +154,44 @@ body {
     border-radius: 10px;
 }
 .btt_box{
-    width: 100%;
-    height: 83%;
+    width: 95%;
+    height: 100%;
     border: 2px solid #7EAE74;
-    margin-top: 5%;
     margin-left: 20px;
     margin-right: 20px;
+    border-radius: 10px 0px 10px 10px;
+}
+.tab {
+    overflow: hidden;
+    background-color: #7EAE74;
+    width: 100%;
+    border-radius: 10px 10px 0px 0px;
+}
+  
+  /* Style the buttons that are used to open the tab content */
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+  
+.tab button:hover {
+    background-color:#abd4ab;
     border-radius: 10px;
+    height: 100%;
+}
+  
+.tab button.active {
+    background-color: #7EAE74;
+}
+  
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #181818;
+    border-top: none;
 }

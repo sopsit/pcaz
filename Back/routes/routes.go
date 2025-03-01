@@ -3,16 +3,14 @@
 package routes
 
 import (
-    "github.com/gin-gonic/gin"
+    //"github.com/gin-gonic/gin"
     "myproject/handlers"
+    "net/http"
 )
 
-func SetupRouter() *gin.Engine {
-    r := gin.Default()
+func SetupRoutes() {
 
-    // Define API routes
-    r.GET("/users", handlers.GetUsers)
-    r.POST("/users", handlers.CreateUser)
+	http.HandleFunc("/login", handlers.LoginHandler)
 
-    return r
 }
+
