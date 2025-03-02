@@ -3,14 +3,21 @@
 package routes
 
 import (
-    //"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
     "myproject/handlers"
-    "net/http"
+   // "net/http"
 )
 
-func SetupRoutes() {
+// func SetupRoutes() {
 
-	http.HandleFunc("/login", handlers.LoginHandler)
+// 	http.HandleFunc("/login", handlers.LoginHandler)
 
+// }
+func SetupRoutes(router *gin.Engine) {
+
+    api := router.Group("/api")
+    {
+        api.POST("api/login", handlers.LoginHandler)
+       // api.GET("/profile", handlers.ProfileHandler)
+    }
 }
-

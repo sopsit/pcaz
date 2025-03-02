@@ -15,14 +15,12 @@ var DB *sql.DB
 func Connect_db() (*sql.DB, error) {
 
 	dsn := "root:sanativanamazhayash@@tcp(127.0.0.1:3306)/pcaz"
-	//var err error
-	// Open database connection
+
 	 da , err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal("Error connecting to the database:", err)
 		return nil, err
 	}
-	//defer DB.Close()
 
 	// Test the connection
 	err = da.Ping()
@@ -37,6 +35,5 @@ func Connect_db() (*sql.DB, error) {
 }
 
 func Get_database() *sql.DB {
-
 	return DB
 }
