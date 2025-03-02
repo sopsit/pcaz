@@ -100,20 +100,22 @@
             function login() {
             const phonenumber = document.getElementById("phone_num").value;
 
-            fetch("http://localhost:8080/login", {
+            fetch("http://localhost:8080/api/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({phonenumber})
             })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = "profile.html"; // Redirect on success
-                } else {
-                    alert("Invalid credentials");
-                }
-            })
+            .then(response => response.json())
+            .then(data => {
+             if (data.message === "Login successful") {
+            localStorage.setItem("user", JSON.stringify(data.user)); // Store user session
+            window.location.href = "profile.html";
+             } else {
+            alert("Invalid credentials");
+            }
+        })
             .catch(error => console.error("Error:", error));
         }
         </script>
