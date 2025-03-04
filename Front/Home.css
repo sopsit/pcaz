@@ -1,0 +1,213 @@
+body {
+    margin: 0;
+    padding: 0 ;
+    overflow-x: hidden; 
+    overflow-y:scroll;
+}
+i {
+    margin: 2px;
+}
+
+
+a {
+    text-decoration: none; 
+  }
+  
+/* .tab a:hover {
+    background-color:#8ecb8e;
+    border-radius: 10px;
+    height: 100%;
+    width: 50%;
+}
+  
+.tab a.active {
+    background-color: #7EAE74;
+} */
+footer {
+    position: relative; /* Or absolute/fixed depending on your layout */
+    bottom: 0; /* Adjust based on your layout */
+    left: 0;
+    width: 100vw;
+    background-color: #272A2D;
+    text-align: center;
+    padding: 10px;
+  }
+  
+
+  @media (max-width: 768px) {
+    footer {
+      padding: 5px;
+    }
+  }
+  
+.background {
+    display: flex;
+    flex-direction: column;
+    /* background-image:url(https://s6.uupload.ir/files/frame_9_mbes.jpg); */
+    /* background-color: #181818; */
+    background: #000000; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #000000, #84e684); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #000000, #84e684); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    /* width: 100vw;
+    height: 100vh; */
+    /* rgb(206, 236, 206); */
+}
+
+.navbar {
+    display: flex;
+    /* position: fixed; */
+    flex-direction: row;
+    /* background-color: #181818; */
+    background: #000000; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to top, #000000, #84e684); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #000000, #84e684);
+    height:90px;
+    width: 100%;
+    z-index: 100;
+  
+}
+.txt{
+    font-size: 1.1rem;
+    color: white;
+    text-align: center;
+    font-family: 'Vazirmatn';
+
+}
+.col{
+    display: flex;
+    flex-direction: column;
+    height:80%;
+    width: 20%;
+    padding-left: 0%;
+    padding-top: 2%;
+}
+* {box-sizing:border-box}
+
+* {box-sizing:border-box}
+
+/* Slideshow container */
+.slideshow-container {
+    display: flex;
+    flex-direction: row;
+    width:100% ;
+    height: 400px;
+    border-radius: 10px;  
+}
+.row{
+  display: flex;
+  flex-direction: row;
+  width:100% ;
+  height: 10%;
+}
+/* Hide the images by default */
+.mySlides {
+  display:flex;
+  flex-direction: column;
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+}
+
+/* Next & previous buttons */
+.prev, .next {
+  cursor: pointer;
+  position: absolute;
+  top: 45%;
+  width: auto;
+  margin-top: -22px;
+  padding: 16px;
+  color: #7EAE74;
+  font-weight: bold;
+  font-size: 30px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+}
+
+/* Position the "next button" to the right */
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover, .next:hover {
+  background-color: #447244 ;
+}
+
+/* Caption text */
+.text {
+  color: #f2f2f2;
+  font-size: 15px;
+  padding: 8px 12px;
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Number text (1/3 etc) */
+.numbertext {
+  color: #f2f2f2;
+  font-size: 12px;
+  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+}
+
+/* The dots/bullets/indicators */
+.dot {
+  position: relative;
+  left: 50%;
+  top: 20%;
+  cursor: pointer;
+  height: 15px;
+  width: 15px;
+  margin: 0 2px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.6s ease;
+}
+
+.active, .dot:hover {
+  background-color: #717171;
+}
+
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 1s;
+}
+
+@keyframes fade {
+  from {opacity: .4}
+  to {opacity: 1}
+}
+.logo {
+    position: relative;
+    top: 20px;
+}
+.product{
+    display: flex;
+    flex-direction: row;
+    overflow-y: scroll;
+    height:400px;
+    width: 100%;
+    /* margin-left: 3%;
+    margin-right: 6%; */
+    margin-bottom: 1%;
+    margin-top: 1%;
+    border-radius: 10px;
+    background: #000000; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #000000, #84e684); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #000000, #84e684)
+}
+.line{
+  margin-top: 10px;
+  width: 100%;
+  height: 5px;
+  background-color: #000000;
+  filter: blur(10px);
+}
+
