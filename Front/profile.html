@@ -52,7 +52,6 @@
                     </div>
                     
                     <div class="txt" id="date" style="font-size: 0.9rem; width: 200px;">
-                        1403/02/03
                     </div>      
                 </div>
                 <div class="name">
@@ -94,7 +93,8 @@
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <div class="bigbox" id="number_of_int">
+                    <div class="bigbox" id="status">
+                    
                     </div>
                 </div>
                 <div class="int2">
@@ -167,9 +167,11 @@
     <script>
         window.onload = function() {
             const storedUser = localStorage.getItem("user");
+            const storestatus = localStorage.getItem("status");
 
             if (storedUser) {
                 const user = JSON.parse(storedUser);
+                const status = JSON.parse(storestatus);
                 if (user.name) { 
                     document.getElementById('name').textContent = user.name; // Use lowercase if backend sends "name"
                 } 
@@ -185,6 +187,11 @@
                 if (user.referralcode) { 
                     document.getElementById('ref_code').textContent = user.referralcode; // Use lowercase if backend sends "name"
                 }
+                if (status.status) {
+                    document.getElementById('status').textContent = status.status;
+                    // document.getElementById('status').textContent = user.cid; // Use lowercase if backend sends "name"
+                }
+
             }
         };
 

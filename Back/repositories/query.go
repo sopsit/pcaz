@@ -9,7 +9,7 @@ import (
 	"myproject/structure"
 )
 
-func AddClient (newclient structure.Client) error {
+func AddClient(newclient structure.Client) error {
 
 	Database := configdb.Get_database()
 
