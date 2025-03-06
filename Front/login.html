@@ -99,7 +99,6 @@
         <script>
             function login() {
             const phonenumber = document.getElementById("phone_num").value;
-
             fetch("http://localhost:8080/api/login", {
                 method: "POST",
                 headers: {
@@ -109,14 +108,15 @@
             })
             .then(response => response.json())
             .then(data => {
-             if (data.message === "Login successful") {
-            localStorage.setItem("user", JSON.stringify(data.user)); // Store user session
-            window.location.href = "profile.html";
-             } else {
+            if (data.message === "Login successful" && data.user) {
+                localStorage.setItem("user", JSON.stringify(data.user)); // Store user session
+                window.location.href = "Home.html";
+            } else {
             alert("Invalid credentials");
             }
         })
             .catch(error => console.error("Error:", error));
         }
+
         </script>
 </bode>
