@@ -22,3 +22,32 @@ type DiscountCode struct {
     ExpirationDate string
 	
 }
+
+type CartStatus struct {
+	
+	 Cartnum int
+	 Carts   string
+
+}
+
+type ProuductInfo struct {
+ 
+	PCategory       string
+	PBrand          string
+	PModel          string
+	CartPrice       float64
+	PQuantity       int
+
+}
+
+type History struct {
+
+	PInfo   []ProuductInfo
+	TotalPrice   float64
+}
+
+type Info struct {
+	ProductBrand string
+	ProductModel string
+	ProductCategory string
+}

@@ -2,11 +2,13 @@
 
 package repositories
 
+
 import (
 	"database/sql"
 	"errors"
 	"myproject/configdb"
 	"myproject/structure"
+	"fmt"
 )
 
 func AddClient (newclient structure.Client) error {
@@ -170,26 +172,151 @@ func GetPrivateDiscountCode(userID int) ([]structure.DiscountCode, error) {
 
 }
 
-// func main() {
+func GetCartStatus(userID int) ([]structure.CartStatus , error) {
 
-// 	configdb.Connect_db()
+	Database := configdb.Get_database()
 
-// 	defer configdb.Get_database().Close()
+	query := ` SELECT Cart_Number , Cart_Status FROM Shopping_Cart WHERE id = ? ORDER BY Cart_Number `
 
-// 	  res , err := GetClientInfo("09123459587")
+	row , err1 := Database.Query(query, userID)
 
-// 	 fmt.Println(res , err)
+	if err1 != nil {
+		return nil , err1
+	}
 
-// 	// id := res.Cid
+	defer row.Close()
 
-// 	// res1, err1 := Getaddress(1)
-	
-// 	// res2 , err2 := Is_VIP(1)
-	
-// 	//res3 , err3 := GetPrivateDiscountCode(1)
+	var carts []structure.CartStatus
 
-// 	// res4 , err4 := GetCountOfReferredClient(1)
-	
+	for row.Next() {
 
-	
-// }
+		var cs structure.CartStatus
+		err2 := row.Scan(&cs.Cartnum , &cs.Carts)
+		if err2 != nil {
+			return nil, err2
+		}
+
+		carts = append(carts, cs)
+	}
+
+	if (len(carts) == 0 ) {
+        return nil , errors.New(" NO Carts found! ")
+	}
+
+      return carts , nil
+}
+
+func GetCartInformation (userID int) ([]structure.History , error) {
+       
+	Database := configdb.Get_database()
+
+	query1 := `SELECT L.id , L.Cart_Number , L.Locked_Cart_Number 
+             FROM  Locked_Shopping_Cart L JOIN Issued_For I ON L.id=I.id AND L.Cart_Number=I.Cart_number AND L.Locked_Cart_Number=I.Locked_number
+             JOIN Transactions T ON  T.Tracking_code = I.Tracking_code
+             WHERE T.T_Status = 'Successful' AND L.id = ? 
+             ORDER BY T.Transactions_time DESC
+             LIMIT 5; `
+
+    query2 := ` SELECT Category , Brand , Model , Cart_price , Quantity
+                FROM Added_To A JOIN Product P ON A.Product_ID=P.id
+                WHERE  A.id=? AND A.Cart_number=? AND A.Locked_number=? `
+
+	query3 := ` CALL calculate_price(? , ? , ? , @res)`
+
+    row , err := Database.Query(query1 , userID)
+
+	if err != nil {
+		return nil , err
+	}
+
+	defer row.Close()
+    var cartin []structure.History
+
+	for row.Next() {
+
+		var cid , cnum , lcnum int
+		var Tprice float64
+        var tempcartin structure.History
+		err1 := row.Scan(&cid , &cnum , &lcnum)
+		if err1 != nil { return nil , err1 }
+
+		rows , err2 := Database.Query(query2 , cid , cnum , lcnum)
+        if err2 != nil { return nil , err2 }
+		var plist []structure.ProuductInfo
+		for rows.Next() {
+               var pl structure.ProuductInfo
+			 err3 :=  rows.Scan(&pl.PCategory , &pl.PBrand , &pl.PModel , &pl.CartPrice , &pl.PQuantity)
+			 if err3 != nil { return nil , err3 }
+			 plist = append(plist, pl)
+		}
+
+		_ , err4 :=  Database.Exec(query3 , cid , cnum , lcnum )
+		if err4 != nil { return nil , err4 }
+		err5 := Database.QueryRow("SELECT @res").Scan(&Tprice)
+		if err5 != nil { return nil , err5 }
+		tempcartin.PInfo = plist
+		tempcartin.TotalPrice = Tprice
+
+		cartin = append(cartin, tempcartin)    
+        rows.Close()
+	}
+
+	if(len(cartin)== 0 ) { return nil , errors.New(" No carts found. ")}
+
+	return cartin , nil
+
+}
+
+func GetProductId (brand string , model string) (int , error){
+     
+	Database := configdb.Get_database()
+
+	var PID int
+
+	query := " SELECT id FROM Product WHERE Brand=? AND Model=?"
+
+	err := Database.QueryRow(query , brand , model).Scan(&PID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {return  -1 , errors.New(" Prouduct not found. ")}
+		return -1 , err
+	}
+
+	return PID , nil
+       
+}
+
+func  GetCompatible (Pbrand string , pmodel string , p1 string , p2 string , p3 string) ([]int , error) {
+  
+	Database := configdb.Get_database()
+
+    pid , er := GetProductId(Pbrand , pmodel)
+	if er != nil {return nil , er}
+
+	query := fmt.Sprintf(" SELECT %s FROM %s WHERE %s = ? " , p1 , p3 , p2)
+	row , err := Database.Query(query , pid)
+	if(err!=nil) { return nil , err}
+    defer row.Close()
+
+	var cmpids []int
+	for row.Next() {
+		var ids int
+		err1 := row.Scan(&ids)
+		if(err1!=nil) { return nil , err1}
+       cmpids = append(cmpids, ids)
+	}
+
+	if(len(cmpids) == 0){
+		return nil , errors.New(" NO Products Found! ")
+	}
+
+	return cmpids , nil
+
+}
+
+
+
+
+
+
+
