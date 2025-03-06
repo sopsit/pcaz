@@ -23,5 +23,14 @@ import (
         
         return user, nil
     }
+    func Get_status(userId int) (*bool, error){
+        configdb.Connect_db()
+
+        is_VIP, err := repositories.Is_VIP(userId)
+        if err != nil || is_VIP == nil {
+            return nil, errors.New("invalid credentials") 
+        }
+        return is_VIP, nil
+    }
 
 

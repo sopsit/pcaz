@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Home.css">
+    <link rel="stylesheet" href="fontawesome-free-6.7.2-web/css/all.css ">
+</head>
+<body >
+    <div class="background">
+      
+        <div class="navbar">
+          <div class="col" style="margin-left: 0%; padding-top: 0.3%;">
+              <label class="txt" style="font-size: 3rem;">Pcaz</label>
+          </div>
+            <div class="col tab"style="" >
+                <a href="Home.html" class="txt"> Home </a>
+            </div>
+            <div class="col tab">
+                <a href="profile.html" class="txt"> Profile</a>
+            </div>
+        </div>
+        <div class="line">
+        </div>
+         <div class="slideshow-container">
+              
+                <img class="mySlides fade" src="https://s6.uupload.ir/files/ram-gettyimages-chris-clor-5c1ab41cc9e77c0001ec3e96_xssl.jpg" style="width:100%">
+            
+                <img  class="mySlides fade" src="https://s6.uupload.ir/files/asus-rtx-tuf-gaming-gpu_yqhu.jpg" style="width:100%">
+
+                <img class="mySlides fade" src="https://s6.uupload.ir/files/picture-of-a-motherboard_238s.jpg" style="width:100%">
+              <!-- Next and previous buttons -->
+              <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+              <a class="next" onclick="plusSlides(1)">&#10095;</a>
+          </div>
+          <div class="line">
+          </div> 
+          <div class="product" style="overflow-y: auto;">
+
+          </div>
+
+       <script>
+        let slideIndex = 1;
+        showSlides(slideIndex);
+
+        // Next/previous controls
+        function plusSlides(n) {
+        showSlides(slideIndex += n);
+        }
+
+        // Thumbnail image controls
+        function currentSlide(n) {
+        showSlides(slideIndex = n);
+        }
+
+        function showSlides(n) {
+        let i;
+        let slides = document.getElementsByClassName("mySlides");
+        let dots = document.getElementsByClassName("dot");
+        if (n > slides.length) {slideIndex = 1}
+        if (n < 1) {slideIndex = slides.length}
+        for (i = 0; i < slides.length; i++) {
+            slides[i].style.display = "none";
+        }
+        for (i = 0; i < dots.length; i++) {
+            dots[i].className = dots[i].className.replace(" active", "");
+        }
+        slides[slideIndex-1].style.display = "block";
+        dots[slideIndex-1].className += " active";
+        } 
+       </script>
+          
+    </div> 
+    <footer>
+        <p class="txt">Winter 2025</p>
+        <p class="txt">pcaz.com</p>
+    </footer>
+</body>

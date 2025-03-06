@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="fontawesome-free-6.7.2-web/css/all.css ">
 
 </head>
-<body>
+<body  profile_info()>
     <div class="background">
         <div class="left">
             <div class="left_up_row" >
@@ -48,12 +48,15 @@
         <div class="right">
             <div class="name_pic">
                 <div class="name" >
-                    <div class="txt" id="name">
-                        یاسمن صفریان
+                    <div class="txt" id="name">     
                     </div>
-                    <div class="txt" id="date" style="font-size: 0.9rem;">
-                        1403/02/03
+                    
+                    <div class="txt" id="date" style="font-size: 0.9rem; width: 200px;">
                     </div>      
+                </div>
+                <div class="name">
+                    <div class="txt" id="Lname">     
+                    </div>
                 </div>
                 <div class="pic">
                     <div class="rec" id="profilePic">
@@ -63,20 +66,21 @@
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <div class="bigbox" id="number_of_int">
+                    <div class="bigbox" id="ref_code">
                     </div>
                 </div>
                 <div class="int2">
-                    <div class="o_txt">
+                    <div class="o_txt" >
                        : کد معرفی
                         <i class="fa-solid fa-code-compare fa-lg" style="color: #ffffff;"></i>
                     </div>
+                   
                 </div>
                 
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <div class="bigbox" id="number_of_int">
+                    <div class="bigbox" id="ref_code">
                     </div>
                 </div>
                 <div class="int2">
@@ -89,7 +93,8 @@
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <div class="bigbox" id="number_of_int">
+                    <div class="bigbox" id="status">
+                    
                     </div>
                 </div>
                 <div class="int2">
@@ -115,7 +120,7 @@
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <div class="bigbox" id="number_of_int">
+                    <div class="bigbox" id="wallet">
                     </div>
                 </div>
                 <div class="int2">
@@ -160,19 +165,37 @@
        
     </div>
     <script>
-        function openCity(evt, buttn_name) {
-          var i, tabcontent, tablinks;
-          tabcontent = document.getElementsByClassName("tabcontent");
-          for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-          }
-          tablinks = document.getElementsByClassName("tablinks");
-          for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-          }
-          document.getElementById(buttn_name).style.display = "block";
-          evt.currentTarget.className += " active";
-        }
+        window.onload = function() {
+            const storedUser = localStorage.getItem("user");
+            const storestatus = localStorage.getItem("status");
+
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                const status = JSON.parse(storestatus);
+                if (user.name) { 
+                    document.getElementById('name').textContent = user.name; // Use lowercase if backend sends "name"
+                } 
+                if (user.lastname) { 
+                    document.getElementById('Lname').textContent = user.lastname; // Use lowercase if backend sends "name"
+                } 
+                if (user.signuptime) { 
+                    document.getElementById('date').textContent = user.signuptime; // Use lowercase if backend sends "name"
+                }
+                if (user.walletbalance) { 
+                    document.getElementById('wallet').textContent = user.walletbalance; // Use lowercase if backend sends "name"
+                }
+                if (user.referralcode) { 
+                    document.getElementById('ref_code').textContent = user.referralcode; // Use lowercase if backend sends "name"
+                }
+                if (status.status) {
+                    document.getElementById('status').textContent = status.status;
+                    // document.getElementById('status').textContent = user.cid; // Use lowercase if backend sends "name"
+                }
+
+            }
+        };
+
+
     </script>
     
 </body>

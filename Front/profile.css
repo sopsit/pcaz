@@ -50,8 +50,8 @@ body {
 .name{
     display: flex;
     flex-direction: column;
-    width:50%;
-    margin-top: 2%;
+    width:25%;
+    margin-top: 10%;
 }
 .pic{
     display: flex;
@@ -59,8 +59,8 @@ body {
     width: 50%;
 }
 .txt{
-    padding-top: 12%;
-    font-size: 1.4rem;
+    padding-top: 10%;
+    font-size: 1.2rem;
     color: white;
     text-align: center;
     font-family: 'Vazirmatn';
@@ -86,7 +86,7 @@ body {
     flex-direction: column;
     width:50%;
     margin-left: 2%;
-    margin-top: 3%;
+    /* margin-top: 3%; */
 }
 .int2{
     display: flex;
@@ -112,6 +112,11 @@ body {
     border-style:groove;
     border: 2px hidden #1A501A;  
     border-radius: 5px;  
+    font-family: 'Vazirmatn';
+    font-size: 1rem;
+    color: white;
+    text-align: center;
+    padding-top: 10%;
 }
 .v_line{
     width: 2px;
