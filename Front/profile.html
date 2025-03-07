@@ -107,7 +107,7 @@
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <div class="bigbox" id="number_of_int">
+                    <div class="bigbox" id="time">
                     </div>
                 </div>
                 <div class="int2">
@@ -133,7 +133,7 @@
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <div class="bigbox" id="number_of_int">
+                    <div class="bigbox" id="fiftyP">
                     </div>
                 </div>
                 <div class="int2">
@@ -170,7 +170,9 @@
             const storedUser = localStorage.getItem("user");
             const storestatus = localStorage.getItem("status");
             const storecount = localStorage.getItem("count_ref");
-             console.log(" count_ref:", storecount); // Debugging line
+            const storetime = localStorage.getItem("remaining")
+            const storeper = localStorage.getItem("fiftyPer")
+            // console.log(" status:", storestatus); // Debugging line
             if (storedUser) {
 
                 const user = JSON.parse(storedUser);
@@ -197,6 +199,12 @@
                 }
                 if (storecount) {
                     document.getElementById('count_ref').textContent = storecount;
+                }
+                if (storetime) {
+                    document.getElementById('time').textContent = storetime;
+                }
+                if (storeper) {
+                    document.getElementById('fiftyP').textContent = storeper;
                 }
 
             }

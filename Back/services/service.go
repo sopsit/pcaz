@@ -1,17 +1,14 @@
 package services
 
 import (
-    "myproject/configdb"
-    "myproject/structure"
-    "myproject/repositories"
-    "errors"
-
-    //"errors"
+	"errors"
+	"fmt"
+	"myproject/configdb"
+	"myproject/repositories"
+	"myproject/structure"
 )
-    // if err := configdb.DB.Where("phone_number = ?", phoneNumber).First(&user).Error; err != nil {
-    //     return nil, errors.New("invalid credentials")
-    // }
-    // return &user, nil
+
+
 
     func AuthenticateUser(phonenumber string) (*structure.Client, error) {
         configdb.Connect_db()
@@ -25,6 +22,7 @@ import (
     }
 
     func Get_status(userId int) (*bool, error){
+
         configdb.Connect_db()
 
         is_VIP, err := repositories.Is_VIP(userId)
@@ -36,6 +34,8 @@ import (
     
     func Get_GetCountOfReferredClient(userId int) (*int , error){
         configdb.Connect_db()
+        
+        fmt.Println("in service: ", userId)
 
         count, err := repositories.GetCountOfReferredClient(userId)
         if err != nil || count == nil {
@@ -43,6 +43,26 @@ import (
         }
         return count, nil
     }
-  
+    func Get_GetTimeRemaningofSubscribe(userID int) (string , error){
+        configdb.Connect_db()
+
+        remainingTime, err := repositories.GetTimeRemaningofSubscribe(userID)
+        if err != nil  {
+            return "You are not VIP", errors.New("invalid credentials") 
+        }
+        return remainingTime, nil
+    }
+
+    func Get_GetCountofDiscountCodeFromReferralSystem(userId int) (int , error){
+        configdb.Connect_db()
+
+        fiftyP, err := repositories.GetCountofDiscountCodeFromReferralSystem(userId)
+
+        if err != nil  {
+            return 0, errors.New("invalid credentials") 
+        }
+
+        return fiftyP, nil
+    }
 
 

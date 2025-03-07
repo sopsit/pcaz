@@ -28,23 +28,26 @@ func LoginHandler(c *gin.Context) {
         return
     }
 
+	fmt.Println(" user id:", userInput.Cid)
     user, err := services.AuthenticateUser(userInput.PhoneNumber)
-	is_VIP, err1 := services.Get_status(userInput.Cid)
+	is_VIP, err1 := services.Get_status(user.Cid)
 	count, err2 := services.Get_GetCountOfReferredClient(user.Cid)
+	remaining, _ := services.Get_GetTimeRemaningofSubscribe(user.Cid)
+	fiftyP, _ :=services.Get_GetCountofDiscountCodeFromReferralSystem((user.Cid))
     if err != nil || err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
     }
 	var status  string
 
-	if !*is_VIP {
+	if !(*is_VIP) {
 		status = "CIP"
 	} else {
 		status ="VIP"
 	}
 	count_ref := strconv.Itoa(*count) 
-	 fmt.Println("User storecount:", count_ref)
-    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref})
+	fiftyPer :=strconv.Itoa(fiftyP)
+    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer})
 }
 
 func ProfileHandler(c *gin.Context) {

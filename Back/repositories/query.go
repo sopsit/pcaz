@@ -71,7 +71,7 @@ func Is_VIP(userId int) (*bool, error) {
 	}
    
 	vip =true
-
+	fmt.Println("in query: ", vip)
 	return &vip , nil
 
 }
