@@ -28,12 +28,13 @@ func LoginHandler(c *gin.Context) {
         return
     }
 
-	fmt.Println(" user id:", userInput.Cid)
     user, err := services.AuthenticateUser(userInput.PhoneNumber)
 	is_VIP, err1 := services.Get_status(user.Cid)
 	count, err2 := services.Get_GetCountOfReferredClient(user.Cid)
 	remaining, _ := services.Get_GetTimeRemaningofSubscribe(user.Cid)
 	fiftyP, _ :=services.Get_Get15percent((user.Cid))
+	addresses, _ := services.Get_address(user.Cid) 
+	fmt.Println(" address:", addresses)
     if err != nil || err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
@@ -47,7 +48,7 @@ func LoginHandler(c *gin.Context) {
 	}
 	count_ref := strconv.Itoa(*count) 
 	fiftyPer :=strconv.Itoa(int(fiftyP))
-    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer})
+    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer, "addresses" : addresses})
 }
 
 func ProfileHandler(c *gin.Context) {

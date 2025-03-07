@@ -146,10 +146,9 @@
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <select name="Adress" id="addreses" style="height: 70%; background-color: #0f0f0f; border: 2px solid #7EAE74;border-radius: 5px; color: white;">
-                        <option value="address1">address 1</option>
-                        <option value="address2">address 2</option>
-                        <option value="address3">address 3</option>
+
+                    <select name="Adress" id="addreses" style="height: 50%; background-color: #171717; border: 2px solid #7EAE74;border-radius: 5px; color: white; margin-top: 10%;">
+                        
                     </select>
                 </div>
                 <div class="int2">
@@ -172,7 +171,8 @@
             const storecount = localStorage.getItem("count_ref");
             const storetime = localStorage.getItem("remaining")
             const storeper = localStorage.getItem("fiftyPer")
-            // console.log(" status:", storestatus); // Debugging line
+            const  storedAddresses = localStorage.getItem("addresses")
+             console.log(" addreses:", storedAddresses); // Debugging line
             if (storedUser) {
 
                 const user = JSON.parse(storedUser);
@@ -206,6 +206,18 @@
                 if (storeper) {
                     document.getElementById('fiftyP').textContent = storeper;
                 }
+                if (storedAddresses) {
+                    const addresses = JSON.parse(storedAddresses);
+                    const selectElement = document.getElementById("addreses");
+
+                    selectElement.innerHTML = ""; // Clear existing options
+                    addresses.forEach(address => {
+                        const option = document.createElement("option");
+                        option.value = address;
+                        option.textContent = address;
+                        selectElement.appendChild(option);
+                    });
+        }
 
             }
         };
