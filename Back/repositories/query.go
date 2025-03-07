@@ -2,6 +2,8 @@
 
 package repositories
 
+//package main
+
 
 import (
 	"database/sql"
@@ -286,12 +288,9 @@ func GetProductId (brand string , model string) (int , error){
        
 }
 
-func  GetCompatible (Pbrand string , pmodel string , p1 string , p2 string , p3 string) ([]int , error) {
+func  GetCompatibleWith (pid int , p1 string , p2 string , p3 string) ([]int , error) {
   
 	Database := configdb.Get_database()
-
-    pid , er := GetProductId(Pbrand , pmodel)
-	if er != nil {return nil , er}
 
 	query := fmt.Sprintf(" SELECT %s FROM %s WHERE %s = ? " , p1 , p3 , p2)
 	row , err := Database.Query(query , pid)
@@ -314,9 +313,216 @@ func  GetCompatible (Pbrand string , pmodel string , p1 string , p2 string , p3 
 
 }
 
+func GetProcucts () ([]structure.Product , error) {
+
+	Database := configdb.Get_database()
+
+	query := " SELECT  Category , Current_price , Stock_count , Brand ,  Model  FROM Product "
+
+	 row , err :=Database.Query(query)
+	 if(err!=nil) { return nil , err}
+	 defer row.Close()
+
+	 var plist []structure.Product
+	 for row.Next() {
+		var tmp structure.Product
+		er := row.Scan(&tmp.P_category , &tmp.P_currentprice , &tmp.P_Stock_count , &tmp.P_brand , &tmp.P_model)
+		if(er!=nil) { return nil , er}
+		plist = append(plist, tmp)
+	 }
+
+	 if (len(plist) == 0 ) {
+		return nil , errors.New(" Not products found")
+	 }
+
+	 return plist , nil
+
+}
+
+func Getproductfromid (pid int)(structure.Product , error){
+
+	Database := configdb.Get_database()
+	var tmp structure.Product
+	query := " SELECT  Category , Current_price , Stock_count , Brand ,  Model  FROM Product WHERE id =? "
+	err := Database.QueryRow(query , pid).Scan(&tmp.P_category , &tmp.P_currentprice  , &tmp.P_Stock_count , &tmp.P_brand , &tmp.P_model)
+	if err != nil{
+		if err==sql.ErrNoRows {return  tmp , errors.New(" Not found. ")}
+		return tmp , err
+	}
+
+	return tmp , nil
+}
+
+
+func intersect (cmap map[int]int , cslise []int , err error) (map[int]int){
+
+	res := make(map[int]int)
+
+	if (len(cmap) == 0 && err==nil) {
+		for _ , value := range cslise {
+			res[value]=value
+		}
+
+	} else {
+
+		if err != nil {
+
+			res[-1]=-1
+			return res
+		}
+
+		for _ , value := range cslise {
+          
+			_ , exists := cmap[value]
+			if exists {
+				
+			   res[value]=value
+   
+			}
+	}
+
+}
+
+	return res
+
+}
 
 
 
+func Compatible (list []structure.Info) ([]int , error) {
+    
+	comatiblelist := make(map[string]map[int]int)
+	comatiblelist["POWERSUPPLY"]= make(map[int]int)
+	comatiblelist["GPU"]= make(map[int]int)
+	comatiblelist["SSD"]= make(map[int]int)
+	comatiblelist["RAMSTICK"]= make(map[int]int)
+	comatiblelist["MOTHERBOARD"]= make(map[int]int)
+	comatiblelist["CPU"]= make(map[int]int)
+	comatiblelist["COOLER"]= make(map[int]int)
+
+	for _ , val := range list {
+
+		id , iderr := GetProductId(val.ProductBrand , val.ProductModel)
+		if(iderr == nil) {
+			if(val.ProductCategory=="Power Supply") {
+				s1 , perr := GetCompatibleWith(id , "GPU_ID" , "Power_ID" , "CONNECTOR_COMPATIBLE_WITH")
+					comatiblelist["GPU"] = intersect(comatiblelist["GPU"] , s1 , perr)
+
+			} else if(val.ProductCategory=="SSD") {
+			   s2 , serr := GetCompatibleWith(id , "Motherboard_ID" , "SSD_ID" , "SM_SLOT_COMPATIBLE_WITH")
+					comatiblelist["MOTHERBOARD"] = intersect(comatiblelist["MOTHERBOARD"] , s2 , serr)
+				
+			} else if(val.ProductCategory=="Cooler"){
+				s3 , cerr := GetCompatibleWith(id , "CPU_ID" , "Cooler_ID" , "CC_SOCKET_COMPATIBLE_WITH")
+				comatiblelist["CPU"] = intersect(comatiblelist["CPU"] , s3 , cerr)
+				 
+			}  else if(val.ProductCategory=="GPU"){
+				s4 , gpuerr := GetCompatibleWith(id , "Motherboard_ID" , "GPU_ID" , "GM_SLOT_COMPATIBLE_WITH")
+				 comatiblelist["MOTHERBOARD"] = intersect(comatiblelist["MOTHERBOARD"] , s4 , gpuerr)
+
+				 s4_1 ,  gpuerr1 := GetCompatibleWith(id , "Power_ID" , "GPU_ID" , "CONNECTOR_COMPATIBLE_WITH")
+				comatiblelist["POWERSUPPLY"] = intersect(comatiblelist["POWERSUPPLY"] , s4_1 ,  gpuerr1)	
+
+	    	} else if(val.ProductCategory=="CPU"){
+				s5 , cpuerr := GetCompatibleWith(id , "Motherboard_ID" , "CPU_ID" , "MC_SOCKET_COMPATIBLE_WITH")
+				 comatiblelist["MOTHERBOARD"] = intersect(comatiblelist["MOTHERBOARD"] , s5 , cpuerr)
+				 s5_1 , cpuerr1 := GetCompatibleWith(id , "Cooler_ID" , "CPU_ID" , "CC_SOCKET_COMPATIBLE_WITH")
+				comatiblelist["COOLER"] = intersect(comatiblelist["COOLER"] , s5_1 , cpuerr1)
+
+	       }	else if(val.ProductCategory=="RAM"){
+		           s6 , Ramerr := GetCompatibleWith(id , "Motherboard_ID" , "Ram_ID" , "RM_SLOT_COMPATIBLE_WITH")
+		           comatiblelist["MOTHERBOARD"] = intersect(comatiblelist["MOTHERBOARD"] , s6 ,  Ramerr)
+
+  		   } else if (val.ProductCategory== "Motherboard"){
+
+			   s7 , merr := GetCompatibleWith(id , "SSD_ID" , "Motherboard_ID" , "SM_SLOT_COMPATIBLE_WITH")
+			  comatiblelist["SSD"] = intersect(comatiblelist["SSD"] , s7 ,  merr)
+
+			  s7_1 , merr1 := GetCompatibleWith(id , "GPU_ID" , "Motherboard_ID" , "GM_SLOT_COMPATIBLE_WITH")
+			  comatiblelist["GPU"] = intersect(comatiblelist["GPU"] , s7_1 ,  merr1)
+
+			  s7_2 , merr2 := GetCompatibleWith(id , "Ram_ID" , "Motherboard_ID" , "RM_SLOT_COMPATIBLE_WITH")
+			  comatiblelist["RAMSTICK"] = intersect(comatiblelist["RAMSTICK"] , s7_2 ,  merr2)
+
+			  s7_3 , merr3 := GetCompatibleWith(id , "CPU_ID" , "Motherboard_ID" , "MC_SOCKET_COMPATIBLE_WITH")
+			  comatiblelist["CPU"] = intersect(comatiblelist["CPU"] , s7_3 ,  merr3)
+		   }
+
+		} 
+	}
+
+	var compatiblesid []int
+
+	for _ , categories := range comatiblelist {
+        
+		if(len(categories) != 0) {
+			for _ , val := range categories {
+               if(val != -1) {
+				compatiblesid = append(compatiblesid, val)
+			   }
+			}
+		}
+
+	}
+	if(len(compatiblesid)==0) {
+		return nil , errors.New(" NO compatible products found. ")
+	}
+
+	return compatiblesid , nil
+}
+
+func Getcomatbleproducts(p_list []int) ([]structure.Product ) {
+
+	var l []structure.Product
+
+	for _ , val := range p_list {
+       
+        a , err:= Getproductfromid(val)
+		if err == nil {
+		l = append(l, a)
+		}
+	}
+
+	return l
+
+}
+
+
+
+
+// func main(){
+
+// 	configdb.Connect_db()
+
+
+// 	 var a structure.Info
+// 	 a.ProductBrand="Corsair"
+// 	 a.ProductModel="Vengeance LPX"
+// 	 a.ProductCategory="RAM"
+// 	 var a1 structure.Info
+// 	 a1.ProductBrand="Cooler Master"
+// 	 a1.ProductModel="Hyper 212"
+// 	 a1.ProductCategory="Cooler"
+
+// 	 var a2 structure.Info
+// 	 a2.ProductBrand="ASUS"
+// 	 a2.ProductModel="ROG Strix Z590-E"
+// 	 a2.ProductCategory="Motherboard"
+
+// 	 var b []structure.Info
+// 	 b= append(b, a)
+// 	 b= append(b, a1)
+// 	 b= append(b, a2)
+
+// 	 res , err := Compatible(b)
+// 	s := Getcomatbleproducts(res)
+// 	fmt.Println(s)
+
+// 	 fmt.Println(res , err )
+
+
+	
+// }
 
 
 

@@ -51,3 +51,12 @@ type Info struct {
 	ProductModel string
 	ProductCategory string
 }
+
+type Product struct {
+
+	P_category string
+	P_currentprice float64
+	P_Stock_count int
+	P_brand string
+	P_model string
+}
