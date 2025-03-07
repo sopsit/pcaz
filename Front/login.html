@@ -107,12 +107,13 @@
                 },
                 body: JSON.stringify({phonenumber})
             })
-            .then(response => response.json())
+            .then(response =>  response.json())
+            
             .then(data => {
             if (data.message === "Login successful" && data.user ) {
                 localStorage.setItem("status", String(data.status));
                 localStorage.setItem("user", JSON.stringify(data.user));
-                localStorage.setItem("count_ref", String(data.count_ref)); // Set count_ref in localStorage
+                localStorage.setItem("count_ref", String(data.count_ref));
                 localStorage.setItem("remaining",String(data.remaining) )
                 localStorage.setItem("fiftyPer",String(data.fiftyPer))
                 //  console.log("status :", localStorage.getItem("status"));

@@ -33,7 +33,7 @@ func LoginHandler(c *gin.Context) {
 	is_VIP, err1 := services.Get_status(user.Cid)
 	count, err2 := services.Get_GetCountOfReferredClient(user.Cid)
 	remaining, _ := services.Get_GetTimeRemaningofSubscribe(user.Cid)
-	fiftyP, _ :=services.Get_GetCountofDiscountCodeFromReferralSystem((user.Cid))
+	fiftyP, _ :=services.Get_Get15percent((user.Cid))
     if err != nil || err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
@@ -46,7 +46,7 @@ func LoginHandler(c *gin.Context) {
 		status ="VIP"
 	}
 	count_ref := strconv.Itoa(*count) 
-	fiftyPer :=strconv.Itoa(fiftyP)
+	fiftyPer :=strconv.Itoa(int(fiftyP))
     c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer})
 }
 

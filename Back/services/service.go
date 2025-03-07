@@ -34,7 +34,7 @@ import (
     
     func Get_GetCountOfReferredClient(userId int) (*int , error){
         configdb.Connect_db()
-        
+
         fmt.Println("in service: ", userId)
 
         count, err := repositories.GetCountOfReferredClient(userId)
@@ -53,10 +53,10 @@ import (
         return remainingTime, nil
     }
 
-    func Get_GetCountofDiscountCodeFromReferralSystem(userId int) (int , error){
+    func Get_Get15percent(userId int) (float64 , error){
         configdb.Connect_db()
 
-        fiftyP, err := repositories.GetCountofDiscountCodeFromReferralSystem(userId)
+        fiftyP, err := repositories.Get15percent(userId)
 
         if err != nil  {
             return 0, errors.New("invalid credentials") 
