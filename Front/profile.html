@@ -41,9 +41,11 @@
 
                       </div>
                       
-                      <div id="five_last_cart" class="tabcontent o_txt">
+                      <div class="tabcontent o_txt">
                         <h3>پنج خرید اخیر </h3>
-                        <p>Tokyo is the capital of Japan.</p>
+                        <div id = "info_container">
+
+                        </div>
                       </div>
                       
                 </div>
@@ -188,10 +190,11 @@
         const storecount = localStorage.getItem("count_ref")
         const storetime = localStorage.getItem("remaining")
         const storeper = localStorage.getItem("fiftyPer")
-        const  storedAddresses = localStorage.getItem("addresses")
+        const storedAddresses = localStorage.getItem("addresses")
         const storeDifcount = localStorage.getItem("dif_count")
         const storeCart = localStorage.getItem("cart")
-        // console.log(storeCart)
+        const storeInfo = localStorage.getItem("cartInfo")
+        //  console.log(storeInfo)
         window.onload = function() {
             if (storedUser) {
                 
@@ -227,7 +230,7 @@
                 if (storeper) {
                     document.getElementById('fiftyP').textContent = storeper;
                 }
-                if (storedAddresses) {
+                if (storedAddresses ) {
                     const addresses = JSON.parse(storedAddresses);
                     const selectElement = document.getElementById("addreses");
                     
@@ -242,6 +245,7 @@
                 if(storeDifcount) {
                     document.getElementById('ref_dis_code').textContent  =storeDifcount;
                 }
+                
                 if (storeCart) {
                     try {
                         const cartArray = JSON.parse(storeCart); 
@@ -262,6 +266,51 @@
                         console.error("Error parsing cart data:", error);
                     }
                 }
+
+                if (storeInfo) {
+                try {
+                    const cartArray = JSON.parse(storeInfo);
+                    const container = document.getElementById("info_container"); 
+                    console.log(cartArray)
+                    console.log("sdfg")
+
+                    container.innerHTML = ""; // ✅ Clear previous content
+
+                    if (Array.isArray(cartArray) && cartArray.length > 0) {
+                        cartArray.forEach(cartInfo => {
+                            // // Create cart summary
+                            // const cartTitle = document.createElement("h4");
+                            // cartTitle.textContent = `Cart number ${cart.Cartnum}  -> ${cart.Carts}`;
+                            // container.appendChild(cartTitle);
+
+                            // Create total price display
+                            const totalPrice = document.createElement("p");
+                            totalPrice.textContent = `Total Price: $${cartInfo.TotalPrice}`;
+                            container.appendChild(totalPrice);
+
+                            if (Array.isArray(cartInfo.PInfo) && cartInfo.PInfo.length > 0) {
+                                cartInfo.PInfo.forEach(product => {
+                                    const productInfo = document.createElement("p");
+                                    productInfo.textContent = 
+                                        `Category: ${product.PCategory}, Brand: ${product.PBrand}, Model: ${product.PModel}, Price: $${product.CartPrice}, Quantity: ${product.PQuantity}`;
+                                    container.appendChild(productInfo);
+                                });
+                            } else {
+                                const noProducts = document.createElement("p");
+                                noProducts.textContent = "No products in this cart.";
+                                container.appendChild(noProducts);
+                            }
+
+                            // Add a separator for better readability
+                            container.appendChild(document.createElement("hr"));
+                        });
+                    } else {
+                        container.innerHTML = "<p>No cart data available.</p>"; // ✅ Handle empty cart
+                    }
+                } catch (error) {
+                    console.error("Error parsing cart data:", error);
+                }
+            }
 
             }
         };

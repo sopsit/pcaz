@@ -32,18 +32,18 @@ type CartStatus struct {
 
 type ProuductInfo struct {
  
-	PCategory       string
-	PBrand          string
-	PModel          string
-	CartPrice       float64
-	PQuantity       int
+	PCategory       string	`json:"PCategory"`
+	PBrand          string	`json:"PBrand"`
+	PModel          string	`json:"PModel"`
+	CartPrice       float64	`json:"CartPrice"`
+	PQuantity       int	`json:"PQuantity"`
 
 }
 
 type History struct {
 
-	PInfo   []ProuductInfo
-	TotalPrice   float64
+	PInfo   []ProuductInfo `json:"PInfo"`
+	TotalPrice   float64	`json:"TotalPrice"`
 }
 
 type Info struct {

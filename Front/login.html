@@ -119,8 +119,15 @@
                 localStorage.setItem("addresses",  JSON.stringify(data.addresses))
                 localStorage.setItem("dif_count", String(data.dif_count) )
                 localStorage.setItem("cart", JSON.stringify(data.cart))
+                localStorage.setItem("cartInfo", JSON.stringify(data.cartInfo))
+                // console.log("Cart Info:", data.cartInfo);
 
-                window.location.href = "Home.html";
+                // console.log("Cart Info to Store:", localStorage.getItem("cartInfo"));
+               
+                // setTimeout(() => {
+                //     console.log("After 2 seconds");
+                // }, 2000);
+                 window.location.href = "Home.html";
             } else {
             alert("Invalid credentials");
             }

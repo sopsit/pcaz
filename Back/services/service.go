@@ -68,7 +68,9 @@ import (
         
         address, err := repositories.Getaddress(userId)
         fmt.Println("in service: ", address)
-
+        if len(address) == 0 {
+            address = append(address, "No addres avalable")
+        }
         if err != nil  {
             return address, errors.New("invalid credentials") 
         }
@@ -98,6 +100,19 @@ import (
         }
 
         return cart, nil
+    }
+    func Get_CartInformation(userID int) ([]structure.History , error) {
+        configdb.Connect_db()
+        
+        cartInfo, err := repositories.GetCartInformation(userID)
+        // fmt.Println("in service: ", cart)
+        if err != nil  {
+            fmt.Println("Error in GetCartInformation:", err) 
+            return cartInfo, errors.New("invalid credentials") 
+        }
+        //  fmt.Println("in service3: ", cartInfo)
+
+        return cartInfo, nil
     }
 
     
