@@ -38,7 +38,8 @@ func LoginHandler(c *gin.Context) {
 	fiftyP, _ :=services.Get_Get15percent((user.Cid))
 	addresses, _ := services.Get_address(user.Cid) 
 	diff_count, _ := services.Get_CountofDiscountCodeFromReferralSystem(user.Cid)
-	fmt.Println(" diff_count:", diff_count)
+	cart, _ :=services.Get_CartStatus(user.Cid)
+	fmt.Println(" diff_count:", cart)
     if uerr != nil || err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
@@ -53,7 +54,7 @@ func LoginHandler(c *gin.Context) {
 	count_ref := strconv.Itoa(*count) 
 	fiftyPer :=strconv.Itoa(int(fiftyP))
 	dif_count := strconv.Itoa(diff_count)
-    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer, "addresses" : addresses, "dif_count" : dif_count})
+    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer, "addresses" : addresses, "dif_count" : dif_count, "cart" :cart})
 }
 
 func ProfileHandler(c *gin.Context) {

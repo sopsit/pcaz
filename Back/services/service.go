@@ -87,5 +87,18 @@ import (
 
         return dif_count, nil
     }
+    func Get_CartStatus(userID int) ([]structure.CartStatus , error) {
+
+        configdb.Connect_db()
+        
+        cart, err := repositories.GetCartStatus(userID)
+        // fmt.Println("in service: ", cart)
+        if err != nil  {
+            return cart, errors.New("invalid credentials") 
+        }
+
+        return cart, nil
+    }
+
     
 

@@ -25,8 +25,8 @@ type DiscountCode struct {
 
 type CartStatus struct {
 	
-	 Cartnum int
-	 Carts   string
+	 Cartnum int		`json:"Cartnum"`
+	 Carts   string		`json:"Carts"`
 
 }
 

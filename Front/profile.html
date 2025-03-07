@@ -24,18 +24,21 @@
                 <div class="btt_box">
                     <div  class="tabcontent o_txt">
                         <h3>
-                           کد تخفیف های رو به اتمام 
+                           کد تخفیف های سیستم معرفی 
                         </h3>
-                        <div id="last_dis_code">
+                        <div id="ref_dis_code">
 
                         </div>
                       </div>
-                      <div id="ref_dis_code" class="tabcontent o_txt">
+                      <div id="" class="tabcontent o_txt">
                         
                       </div>
-                      <div id="cart-status" class="tabcontent o_txt">
+                      <div class="tabcontent o_txt">
                         <h3>وضعیت‌ سبدهای‌خرید‌</h3>
-                        <p>Paris is the capital of France.</p>
+                        <div   id="cart_container">
+
+                        </div>
+
                       </div>
                       
                       <div id="five_last_cart" class="tabcontent o_txt">
@@ -180,17 +183,19 @@
             document.getElementById(buttn_name).style.display = "block";
              evt.currentTarget.className += " active";
          }
-        const storedUser = localStorage.getItem("user");
-        const storestatus = localStorage.getItem("status");
-        const storecount = localStorage.getItem("count_ref");
+        const storedUser = localStorage.getItem("user")
+        const storestatus = localStorage.getItem("status")
+        const storecount = localStorage.getItem("count_ref")
         const storetime = localStorage.getItem("remaining")
         const storeper = localStorage.getItem("fiftyPer")
         const  storedAddresses = localStorage.getItem("addresses")
         const storeDifcount = localStorage.getItem("dif_count")
+        const storeCart = localStorage.getItem("cart")
+        // console.log(storeCart)
         window.onload = function() {
             if (storedUser) {
                 
-                const user = JSON.parse(storedUser);
+                const user = JSON.parse(storedUser)
                 
                 if (user.name) { 
                     document.getElementById('name').textContent = user.name; // Use lowercase if backend sends "name"
@@ -235,7 +240,27 @@
                     });
                 }
                 if(storeDifcount) {
-                    document.getElementById('last_dis_code').textContent  =storeDifcount;
+                    document.getElementById('ref_dis_code').textContent  =storeDifcount;
+                }
+                if (storeCart) {
+                    try {
+                        const cartArray = JSON.parse(storeCart); 
+                        const container = document.getElementById("cart_container"); 
+
+                        container.innerHTML = ""; // Clear previous content
+
+                        if (Array.isArray(cartArray) && cartArray.length > 0) {
+                            cartArray.forEach(cart => {
+                                const p = document.createElement("p");
+                                p.textContent = `Cart number ${cart.Cartnum}  -> ${cart.Carts}`;
+                                container.appendChild(p);
+                            });
+                        } else {
+                            container.innerHTML = "<p>No cart data available.</p>";  // ✅ Handle empty array
+                        }
+                    } catch (error) {
+                        console.error("Error parsing cart data:", error);
+                    }
                 }
 
             }
