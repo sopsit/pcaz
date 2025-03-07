@@ -187,9 +187,8 @@
                 if (user.referralcode) { 
                     document.getElementById('ref_code').textContent = user.referralcode; // Use lowercase if backend sends "name"
                 }
-                if (status.status) {
-                    document.getElementById('status').textContent = status.status;
-                    // document.getElementById('status').textContent = user.cid; // Use lowercase if backend sends "name"
+                if (status) {
+                    document.getElementById('status').textContent = status;
                 }
 
             }

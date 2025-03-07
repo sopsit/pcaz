@@ -110,7 +110,7 @@
             .then(data => {
             if (data.message === "Login successful" && data.user && data.status) {
                 localStorage.setItem("user", JSON.stringify(data.user)); // Store user session
-                localStorage.setItem("status", JSON.stringify(data.status));
+                localStorage.setItem("status", data.status);
                 window.location.href = "Home.html";
             } else {
             alert("Invalid credentials");
