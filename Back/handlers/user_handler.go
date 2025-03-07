@@ -29,12 +29,16 @@ func LoginHandler(c *gin.Context) {
     }
 
 	fmt.Println(" user id:", userInput.Cid)
-    user, err := services.AuthenticateUser(userInput.PhoneNumber)
+    user, uerr := services.AuthenticateUser(userInput.PhoneNumber)
+	if  uerr != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
+        return
+	}
 	is_VIP, err1 := services.Get_status(user.Cid)
 	count, err2 := services.Get_GetCountOfReferredClient(user.Cid)
 	remaining, _ := services.Get_GetTimeRemaningofSubscribe(user.Cid)
 	fiftyP, _ :=services.Get_Get15percent((user.Cid))
-    if err != nil || err1 != nil ||err2 != nil {
+    if  err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
     }
@@ -60,7 +64,7 @@ func ProfileHandler(c *gin.Context) {
 	}
 
 	user, err1 := services.AuthenticateUser(userInput.PhoneNumber)
-	is_VIP, err2 := services.Get_status(userInput.Cid)
+	is_VIP, err2 := services.Get_status(user.Cid)
 
 	if err1 != nil || err2 !=nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
