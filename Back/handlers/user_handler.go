@@ -15,7 +15,7 @@ import (
 	"myproject/services"
 	"myproject/structure"
 	// "log"
-	"fmt"
+	// "fmt"
 )
 
 
@@ -40,7 +40,8 @@ func LoginHandler(c *gin.Context) {
 	diff_count, _ := services.Get_CountofDiscountCodeFromReferralSystem(user.Cid)
 	cart, _ :=services.Get_CartStatus(user.Cid)
 	cartInfo, _ :=services.Get_CartInformation(user.Cid)
-	fmt.Println(" cartInfo:", cartInfo)
+	disCode, _ := services.Get_PrivateDiscountCode(user.Cid)
+	// fmt.Println("handler discode:", disCode)
     if uerr != nil || err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
@@ -55,7 +56,7 @@ func LoginHandler(c *gin.Context) {
 	count_ref := strconv.Itoa(*count) 
 	fiftyPer :=strconv.Itoa(int(fiftyP))
 	dif_count := strconv.Itoa(diff_count)
-    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer, "addresses" : addresses, "dif_count" : dif_count, "cart" :cart, "cartInfo" :cartInfo})
+    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer, "addresses" : addresses, "dif_count" : dif_count, "cart" :cart, "cartInfo" :cartInfo, "disCode" : disCode})
 }
 
 func ProfileHandler(c *gin.Context) {

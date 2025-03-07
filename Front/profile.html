@@ -30,8 +30,11 @@
 
                         </div>
                       </div>
-                      <div id="" class="tabcontent o_txt">
-                        
+                      <div  class="tabcontent o_txt">
+                        <h3>کد های تخفیف رو به اتمام</h3>
+                        <div id="dis_container">
+
+                        </div>
                       </div>
                       <div class="tabcontent o_txt">
                         <h3>وضعیت‌ سبدهای‌خرید‌</h3>
@@ -194,7 +197,7 @@
         const storeDifcount = localStorage.getItem("dif_count")
         const storeCart = localStorage.getItem("cart")
         const storeInfo = localStorage.getItem("cartInfo")
-        //  console.log(storeInfo)
+        const storDis = localStorage.getItem("disCode")
         window.onload = function() {
             if (storedUser) {
                 
@@ -271,8 +274,6 @@
                 try {
                     const cartArray = JSON.parse(storeInfo);
                     const container = document.getElementById("info_container"); 
-                    console.log(cartArray)
-                    console.log("sdfg")
 
                     container.innerHTML = ""; // ✅ Clear previous content
 
@@ -312,6 +313,33 @@
                 }
             }
 
+            if (storDis) {
+                    const disCode = JSON.parse(storDis);
+                    const selectElement = document.getElementById("dis_container");
+                    
+                    selectElement.innerHTML = ""; // Clear existing options
+                    disCode.forEach(DiscountCode => {
+                        const codes = document.createElement("p");
+                        codes.textContent = DiscountCode;
+                        selectElement.appendChild(codes);
+                    });
+                }
+
+                if (storDis) {
+
+                    const disCode = JSON.parse(storDis);
+                    const selectElement = document.getElementById("dis_container");
+
+                    selectElement.innerHTML = ""; // Clear existing options
+
+                    disCode.forEach(discountCode => {
+                        const codeElement = document.createElement("p");
+                        
+                        codeElement.textContent = `Code: ${discountCode.Code},  Amount: ${discountCode.CodeAmount},  Limit: ${discountCode.Limit},  UseCount: ${discountCode.UseCount},     CTime: ${discountCode.CTime},   Expiration Date: ${discountCode.ExpirationDate}`;
+                        selectElement.appendChild(codeElement);
+                    });
+                    console.log(discountCode.Code)
+                }
             }
         };
 

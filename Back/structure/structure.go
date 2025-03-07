@@ -14,12 +14,12 @@ type Client struct {
 
 type DiscountCode struct {
   
-	Code       int
-	CodeAmount float64
-	Limit      float64
-	UseCount   int
-	CTime      string 
-    ExpirationDate string
+	Code       int				`json:"Code"`
+	CodeAmount float64			`json:"CodeAmount"`
+	Limit      float64			`json:"Cartnum"`
+	UseCount   int				`json:"UseCount"`
+	CTime      string 			`json:"CTime"`
+    ExpirationDate string		`json:"ExpirationDate"`
 	
 }
 

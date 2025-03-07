@@ -110,9 +110,20 @@ import (
             fmt.Println("Error in GetCartInformation:", err) 
             return cartInfo, errors.New("invalid credentials") 
         }
-        //  fmt.Println("in service3: ", cartInfo)
-
+        
         return cartInfo, nil
+    }
+    func Get_PrivateDiscountCode(userID int) ([]structure.DiscountCode, error) {
+        configdb.Connect_db()
+        
+        disCode, err := repositories.GetPrivateDiscountCode(userID)
+        //  fmt.Println("in service3: ", disCode)
+        if err != nil  {
+            fmt.Println("Error in GetCartInformation:", err) 
+            return disCode, errors.New("invalid credentials") 
+        }
+
+        return disCode, nil
     }
 
     
