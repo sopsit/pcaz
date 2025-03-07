@@ -112,7 +112,7 @@ func Getaddress(userId int) ([]string, error) {
 
 }
 
-func GetCountOfReferredClient (userId int) (*int , error) {
+func GetCountOfReferredClient(userId int) (*int , error) {
 
 	Database := configdb.Get_database()
 	var count int
@@ -307,7 +307,7 @@ func Get15percent(userID int) (float64 , error) {
 
 }
 
-func GetCountofDiscountCodeFromReferralSystem (userId int) (int , error) {
+func GetCountofDiscountCodeFromReferralSystem(userId int) (int , error) {
      
 	Database := configdb.Get_database()
 	var count , cid int
@@ -334,7 +334,7 @@ func GetCountofDiscountCodeFromReferralSystem (userId int) (int , error) {
 
 }
 
-func GetTimeRemaningofSubscribe (userID int) (string , error) {
+func GetTimeRemaningofSubscribe(userID int) (string , error) {
     
 	Database := configdb.Get_database()
     
@@ -363,7 +363,7 @@ func GetTimeRemaningofSubscribe (userID int) (string , error) {
 
 
 
-func GetProductId (brand string , model string) (int , error){
+func GetProductId(brand string , model string) (int , error){
      
 	Database := configdb.Get_database()
 
@@ -382,7 +382,7 @@ func GetProductId (brand string , model string) (int , error){
        
 }
 
-func  GetCompatibleWith (pid int , p1 string , p2 string , p3 string) ([]int , error) {
+func  GetCompatibleWith(pid int , p1 string , p2 string , p3 string) ([]int , error) {
   
 	Database := configdb.Get_database()
 
@@ -407,7 +407,7 @@ func  GetCompatibleWith (pid int , p1 string , p2 string , p3 string) ([]int , e
 
 }
 
-func GetProcucts () ([]structure.Product , error) {
+func GetProcucts() ([]structure.Product , error) {
 
 	Database := configdb.Get_database()
 
@@ -483,7 +483,7 @@ func intersect (cmap map[int]int , cslise []int , err error) (map[int]int){
 
 
 
-func Compatible (list []structure.Info) ([]int , error) {
+func Compatible(list []structure.Info) ([]int , error) {
     
 	comatiblelist := make(map[string]map[int]int)
 	comatiblelist["POWERSUPPLY"]= make(map[int]int)

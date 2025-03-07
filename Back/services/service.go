@@ -23,6 +23,7 @@ import (
         
         return user, nil
     }
+
     func Get_status(userId int) (*bool, error){
         configdb.Connect_db()
 
@@ -32,5 +33,16 @@ import (
         }
         return is_VIP, nil
     }
+    
+    func Get_GetCountOfReferredClient(userId int) (*int , error){
+        configdb.Connect_db()
+
+        count, err := repositories.GetCountOfReferredClient(userId)
+        if err != nil || count == nil {
+            return nil, errors.New("invalid credentials") 
+        }
+        return count, nil
+    }
+  
 
 

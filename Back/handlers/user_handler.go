@@ -5,6 +5,8 @@ package handlers
 import (
 	//"database/sql"
 	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 
 	//"myproject/configdb"
@@ -13,6 +15,7 @@ import (
 	"myproject/services"
 	"myproject/structure"
 	// "log"
+	"fmt"
 )
 
 
@@ -26,8 +29,9 @@ func LoginHandler(c *gin.Context) {
     }
 
     user, err := services.AuthenticateUser(userInput.PhoneNumber)
-	is_VIP, _ := services.Get_status(userInput.Cid)
-    if err != nil {
+	is_VIP, err1 := services.Get_status(userInput.Cid)
+	count, err2 := services.Get_GetCountOfReferredClient(user.Cid)
+    if err != nil || err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
     }
@@ -38,8 +42,9 @@ func LoginHandler(c *gin.Context) {
 	} else {
 		status ="VIP"
 	}
-
-    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status})
+	count_ref := strconv.Itoa(*count) 
+	 fmt.Println("User storecount:", count_ref)
+    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref})
 }
 
 func ProfileHandler(c *gin.Context) {

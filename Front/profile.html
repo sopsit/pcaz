@@ -80,7 +80,7 @@
             </div>
             <div class="introduction">
                 <div class="int1">
-                    <div class="bigbox" id="ref_code">
+                    <div class="bigbox" id="count_ref">
                     </div>
                 </div>
                 <div class="int2">
@@ -165,13 +165,15 @@
        
     </div>
     <script>
+
         window.onload = function() {
             const storedUser = localStorage.getItem("user");
             const storestatus = localStorage.getItem("status");
-
+            const storecount = localStorage.getItem("count_ref");
+             console.log(" count_ref:", storecount); // Debugging line
             if (storedUser) {
+
                 const user = JSON.parse(storedUser);
-                const status = JSON.parse(storestatus);
                 if (user.name) { 
                     document.getElementById('name').textContent = user.name; // Use lowercase if backend sends "name"
                 } 
@@ -187,8 +189,14 @@
                 if (user.referralcode) { 
                     document.getElementById('ref_code').textContent = user.referralcode; // Use lowercase if backend sends "name"
                 }
-                if (status) {
-                    document.getElementById('status').textContent = status;
+                if (storestatus) {
+                    document.getElementById('status').textContent = storestatus;
+                }
+                if (storestatus) {
+                    document.getElementById('status').textContent = storestatus;
+                }
+                if (storecount) {
+                    document.getElementById('count_ref').textContent = storecount;
                 }
 
             }

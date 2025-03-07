@@ -97,6 +97,7 @@
             </div>
         </div>
         <script>
+
             function login() {
             const phonenumber = document.getElementById("phone_num").value;
             fetch("http://localhost:8080/api/login", {
@@ -108,9 +109,12 @@
             })
             .then(response => response.json())
             .then(data => {
-            if (data.message === "Login successful" && data.user && data.status) {
-                localStorage.setItem("user", JSON.stringify(data.user)); // Store user session
-                localStorage.setItem("status", data.status);
+            if (data.message === "Login successful" && data.user ) {
+                localStorage.setItem("status", JSON.stringify(data.status));
+                localStorage.setItem("user", JSON.stringify(data.user));
+                localStorage.setItem("count_ref", String(data.count_ref)); // Set count_ref in localStorage
+                // console.log("Stored count_ref:", localStorage.getItem("count_ref"));
+                // console.log("count_ref:", localStorage.getItem("count_ref")); // Debugging line
                 window.location.href = "Home.html";
             } else {
             alert("Invalid credentials");
@@ -119,5 +123,6 @@
             .catch(error => console.error("Error:", error));
         }
 
+        
         </script>
 </bode>
