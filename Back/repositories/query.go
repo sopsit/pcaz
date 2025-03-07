@@ -1,16 +1,15 @@
 // Queries (Insert, Select, Update, Delete)
 
-package repositories
+ package repositories
 
-//package main
-
+ //package main
 
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"myproject/configdb"
 	"myproject/structure"
-	"fmt"
 )
 
 func AddClient(newclient structure.Client) error {
@@ -59,22 +58,21 @@ func Is_VIP(userId int) (*bool, error) {
 	Database := configdb.Get_database()
 
 	var clientId int
-	var ISVIP bool = false
-
+     vip := false
 	query := " SELECT id FROM VIP_Clients WHERE id=? AND Subscription_expiration_time >= NOW() "
 	row := Database.QueryRow(query, userId)
 	err := row.Scan(&clientId)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ISVIP, nil
+			return &vip , nil
 		}
-		return nil, err
+		return nil , err
 	}
+   
+	vip =true
 
-	ISVIP = true
-
-	return &ISVIP, nil
+	return &vip , nil
 
 }
 
@@ -208,7 +206,7 @@ func GetCartStatus(userID int) ([]structure.CartStatus , error) {
       return carts , nil
 }
 
-func GetCartInformation (userID int) ([]structure.History , error) {
+func GetCartInformation(userID int) ([]structure.History , error) {
        
 	Database := configdb.Get_database()
 
@@ -268,6 +266,102 @@ func GetCartInformation (userID int) ([]structure.History , error) {
 	return cartin , nil
 
 }
+
+func Get15percent(userID int) (float64 , error) {
+ 
+	Database := configdb.Get_database()
+
+	flag , _ := Is_VIP(userID)
+	if !(*flag) {
+
+        return   -1 , errors.New(" Not vip client. ")
+	}
+
+	query1 := ` SELECT  I.id ,  I.Cart_number ,  I.Locked_number 
+               FROM VIP_Clients VIP , Issued_For I , Transactions T 
+               WHERE VIP.id=I.id AND I.Tracking_code = T.Tracking_code AND T.T_Status='Successful' AND
+              T.Transactions_time >= DATE_SUB( Subscription_expiration_time , INTERVAL 1 MONTH ) AND 
+			  T.Transactions_time < Subscription_expiration_time AND VIP.Subscription_expiration_time >= NOW() AND I.id = ?;`
+
+	query2 := ` CALL calculate_price(? , ? , ? , @res)`
+
+	 row , err := Database.Query(query1 , userID)
+	 if err != nil { return -1 , err}
+	 defer row.Close()
+     var price float64
+	 price = 0
+	 for row.Next() {
+		var cid , cartnum , lcartnum int
+		var Tprice float64
+		er := row.Scan(&cid , &cartnum , &lcartnum)
+		if er != nil { return -1 , er}
+		_ , er1 :=  Database.Exec(query2 , cid , cartnum , lcartnum )
+		if er1 != nil { return -1 , er1 }
+		er2 := Database.QueryRow("SELECT @res").Scan(&Tprice)
+		if er2 != nil { return -1 , er2 }
+		price = price + Tprice 
+	 }
+
+	 return (price * 0.15) , nil
+
+
+}
+
+func GetCountofDiscountCodeFromReferralSystem (userId int) (int , error) {
+     
+	Database := configdb.Get_database()
+	var count , cid int
+	query1 := `WITH RECURSIVE REF AS (
+              SELECT Referee FROM refers WHERE Referrer = ?
+              UNION ALL
+              SELECT re.Referee FROM refers re JOIN REF R ON re.Referrer = R.Referee)
+              SELECT COUNT(*) FROM REF;`
+	
+	query2 := "SELECT Referee FROM refers WHERE Referee = ?"
+
+	err := Database.QueryRow(query1 , userId).Scan(&count)
+	if err != nil {
+		if err == sql.ErrNoRows {count=0} else {return 0 , err}
+
+	}
+
+	er := Database.QueryRow(query2 , userId).Scan(&cid)
+	if er == nil {
+		count = count + 1
+	}
+
+	return count , nil
+
+}
+
+func GetTimeRemaningofSubscribe (userID int) (string , error) {
+    
+	Database := configdb.Get_database()
+    
+	flag , _ := Is_VIP(userID) 
+	if !(*flag) {
+		return "" , errors.New(" Not VIP client")
+	}
+    
+	var day , hour int
+
+	query := ` SELECT FLOOR(TIMESTAMPDIFF(HOUR , NOW() , Subscription_expiration_time) / 24 ) AS days ,
+               MOD(TIMESTAMPDIFF(HOUR , NOW() , Subscription_expiration_time) , 24 ) AS hours
+                FROM VIP_Clients WHERE id=?  AND Subscription_expiration_time >= NOW() `
+	err := Database.QueryRow(query , userID).Scan(&day , &hour)
+	if err != nil {
+         if err == sql.ErrNoRows { return "" , errors.New(" No time found. ")}
+		 return "" , err
+	}
+
+	remaning := fmt.Sprintf("Day: %d hour: %d" , day , hour)
+
+	return remaning , nil
+
+}
+
+
+
 
 func GetProductId (brand string , model string) (int , error){
      
@@ -494,35 +588,38 @@ func Getcomatbleproducts(p_list []int) ([]structure.Product ) {
 
 // 	configdb.Connect_db()
 
+// 	res , err := GetTimeRemaningofSubscribe(1);
+// 	fmt.Println(res , err)
 
-// 	 var a structure.Info
-// 	 a.ProductBrand="Corsair"
-// 	 a.ProductModel="Vengeance LPX"
-// 	 a.ProductCategory="RAM"
-// 	 var a1 structure.Info
-// 	 a1.ProductBrand="Cooler Master"
-// 	 a1.ProductModel="Hyper 212"
-// 	 a1.ProductCategory="Cooler"
 
-// 	 var a2 structure.Info
-// 	 a2.ProductBrand="ASUS"
-// 	 a2.ProductModel="ROG Strix Z590-E"
-// 	 a2.ProductCategory="Motherboard"
+	//  var a structure.Info
+	//  a.ProductBrand="Corsair"
+	//  a.ProductModel="Vengeance LPX"
+	//  a.ProductCategory="RAM"
+	//  var a1 structure.Info
+	//  a1.ProductBrand="Cooler Master"
+	//  a1.ProductModel="Hyper 212"
+	//  a1.ProductCategory="Cooler"
 
-// 	 var b []structure.Info
-// 	 b= append(b, a)
-// 	 b= append(b, a1)
-// 	 b= append(b, a2)
+	//  var a2 structure.Info
+	//  a2.ProductBrand="ASUS"
+	//  a2.ProductModel="ROG Strix Z590-E"
+	//  a2.ProductCategory="Motherboard"
 
-// 	 res , err := Compatible(b)
-// 	s := Getcomatbleproducts(res)
-// 	fmt.Println(s)
+	//  var b []structure.Info
+	//  b= append(b, a)
+	//  b= append(b, a1)
+	//  b= append(b, a2)
 
-// 	 fmt.Println(res , err )
+	//  res , err := Compatible(b)
+	// s := Getcomatbleproducts(res)
+	// fmt.Println(s)
+
+	//  fmt.Println(res , err )
 
 
 	
-// }
+ //}
 
 
 
