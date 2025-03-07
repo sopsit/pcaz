@@ -22,13 +22,16 @@
             </div>
             <div class="left_buttn_row">
                 <div class="btt_box">
-                    <div id="last_dis_code" class="tabcontent o_txt">
-                        <h3>کد های رو به اتمام </h3>
-                        <p>London is the capital city of England.</p>
+                    <div  class="tabcontent o_txt">
+                        <h3>
+                           کد تخفیف های رو به اتمام 
+                        </h3>
+                        <div id="last_dis_code">
+
+                        </div>
                       </div>
                       <div id="ref_dis_code" class="tabcontent o_txt">
-                        <h3> کد های دریافت شده  </h3>
-                        <p>Tokyo is the capital of Japan.</p>
+                        
                       </div>
                       <div id="cart-status" class="tabcontent o_txt">
                         <h3>وضعیت‌ سبدهای‌خرید‌</h3>
@@ -164,18 +167,31 @@
        
     </div>
     <script>
-
+        function openCity(evt, buttn_name) {
+             var i, tabcontent, tablinks;
+             tabcontent = document.getElementsByClassName("tabcontent");
+             for (i = 0; i < tabcontent.length; i++) {
+            //  tabcontent[i].style.display = "none";
+             }
+             tablinks = document.getElementsByClassName("tablinks");
+             for (i = 0; i < tablinks.length; i++) {
+             tablinks[i].className = tablinks[i].className.replace(" active", "");
+             }
+            document.getElementById(buttn_name).style.display = "block";
+             evt.currentTarget.className += " active";
+         }
+        const storedUser = localStorage.getItem("user");
+        const storestatus = localStorage.getItem("status");
+        const storecount = localStorage.getItem("count_ref");
+        const storetime = localStorage.getItem("remaining")
+        const storeper = localStorage.getItem("fiftyPer")
+        const  storedAddresses = localStorage.getItem("addresses")
+        const storeDifcount = localStorage.getItem("dif_count")
         window.onload = function() {
-            const storedUser = localStorage.getItem("user");
-            const storestatus = localStorage.getItem("status");
-            const storecount = localStorage.getItem("count_ref");
-            const storetime = localStorage.getItem("remaining")
-            const storeper = localStorage.getItem("fiftyPer")
-            const  storedAddresses = localStorage.getItem("addresses")
-             console.log(" addreses:", storedAddresses); // Debugging line
             if (storedUser) {
-
+                
                 const user = JSON.parse(storedUser);
+                
                 if (user.name) { 
                     document.getElementById('name').textContent = user.name; // Use lowercase if backend sends "name"
                 } 
@@ -209,7 +225,7 @@
                 if (storedAddresses) {
                     const addresses = JSON.parse(storedAddresses);
                     const selectElement = document.getElementById("addreses");
-
+                    
                     selectElement.innerHTML = ""; // Clear existing options
                     addresses.forEach(address => {
                         const option = document.createElement("option");
@@ -217,7 +233,10 @@
                         option.textContent = address;
                         selectElement.appendChild(option);
                     });
-        }
+                }
+                if(storeDifcount) {
+                    document.getElementById('last_dis_code').textContent  =storeDifcount;
+                }
 
             }
         };

@@ -22,7 +22,6 @@ import (
 
 func LoginHandler(c *gin.Context) {
     var userInput structure.Client
-
     if err := c.ShouldBindJSON(&userInput); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
         return
@@ -38,7 +37,8 @@ func LoginHandler(c *gin.Context) {
 	remaining, _ := services.Get_GetTimeRemaningofSubscribe(user.Cid)
 	fiftyP, _ :=services.Get_Get15percent((user.Cid))
 	addresses, _ := services.Get_address(user.Cid) 
-	fmt.Println(" address:", addresses)
+	diff_count, _ := services.Get_CountofDiscountCodeFromReferralSystem(user.Cid)
+	fmt.Println(" diff_count:", diff_count)
     if uerr != nil || err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
@@ -52,7 +52,8 @@ func LoginHandler(c *gin.Context) {
 	}
 	count_ref := strconv.Itoa(*count) 
 	fiftyPer :=strconv.Itoa(int(fiftyP))
-    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer, "addresses" : addresses})
+	dif_count := strconv.Itoa(diff_count)
+    c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer, "addresses" : addresses, "dif_count" : dif_count})
 }
 
 func ProfileHandler(c *gin.Context) {

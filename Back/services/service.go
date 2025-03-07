@@ -75,5 +75,17 @@ import (
 
         return address, nil
     }
+    func Get_CountofDiscountCodeFromReferralSystem(userId int) (int , error) {
+        configdb.Connect_db()
+        
+        dif_count, err := repositories.GetCountofDiscountCodeFromReferralSystem(userId)
+        fmt.Println("in service: ", dif_count)
+
+        if err != nil  {
+            return dif_count, errors.New("invalid credentials") 
+        }
+
+        return dif_count, nil
+    }
     
 

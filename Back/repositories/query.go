@@ -131,8 +131,6 @@ func GetCountOfReferredClient(userId int) (*int , error) {
 
 	return &count , nil
 
-
-
 }
 
 func GetPrivateDiscountCode(userID int) ([]structure.DiscountCode, error) {
@@ -433,7 +431,7 @@ func GetProcucts() ([]structure.Product , error) {
 
 }
 
-func Getproductfromid (pid int)(structure.Product , error){
+func Getproductfromid(pid int)(structure.Product , error){
 
 	Database := configdb.Get_database()
 	var tmp structure.Product
@@ -448,7 +446,7 @@ func Getproductfromid (pid int)(structure.Product , error){
 }
 
 
-func intersect (cmap map[int]int , cslise []int , err error) (map[int]int){
+func intersect(cmap map[int]int , cslise []int , err error) (map[int]int){
 
 	res := make(map[int]int)
 

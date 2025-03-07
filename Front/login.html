@@ -117,7 +117,8 @@
                 localStorage.setItem("remaining",String(data.remaining) )
                 localStorage.setItem("fiftyPer",String(data.fiftyPer))
                 localStorage.setItem("addresses",  JSON.stringify(data.addresses))
-                //  console.log("status :", localStorage.getItem("status"));
+                localStorage.setItem("dif_count", String(data.dif_count) )
+                //   console.log("dif_count :", localStorage.getItem("dif_count"));
                 // console.log("count_ref:", localStorage.getItem("count_ref")); // Debugging line
                 window.location.href = "Home.html";
             } else {
