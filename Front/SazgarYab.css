@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+    padding: 0 ;
+    overflow-x: hidden; 
+}
+i {
+    margin: 2px;
+}
+
+
+a {
+    text-decoration: none; 
+  }
+  .background {
+    display: flex;
+    flex-direction: row;
+    background-color: #0f0f0f;
+    width: 100vw;
+    height: 100vh;
+}
+
+.navbar {
+    display: flex;
+    /* position: fixed; */
+    flex-direction: row;
+    /* background-color: #181818; */
+    background: #000000; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to top, #000000, #84e684); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #000000, #84e684);
+    height:90px;
+    width: 100%;
+    z-index: 100;
+  
+}
+.txt{
+    font-size: 1.1rem;
+    color: white;
+    text-align: center;
+    font-family: 'Vazirmatn';
+
+}
+.col{
+    display: flex;
+    flex-direction: column;
+    height:80%;
+    width: 20%;
+    padding-left: 0%;
+    padding-top: 2%;
+}
