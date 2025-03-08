@@ -264,7 +264,7 @@
                 productElement.dataset.category = product.P_category; // Add category for filtering
 
                 productElement.innerHTML = `
-                    <p>${product.P_brand} - ${product.P_model} ($${product.P_currentprice})</p>
+                    <p>${product.P_brand} - ${product.P_category} - ${product.P_model} ($${product.P_currentprice})</p>
                     <p>Stock Count: ${product.P_Stock_count}</p>
                 `;
 
