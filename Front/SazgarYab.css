@@ -5,6 +5,7 @@ body {
     margin: 0;
     padding: 0 ;
     overflow-x: hidden; 
+    
 }
 i {
     margin: 2px;
@@ -13,24 +14,29 @@ i {
 
 a {
     text-decoration: none; 
-  }
-  .background {
+}
+.background {
+    background-image:url(https://s6.uupload.ir/files/frame_9_mbes.jpg);
     display: flex;
     flex-direction: column;
-    background-color: #0f0f0f;
+    /* background-color: #0f0f0f; */
     width: 100vw;
     height: 100vh;
+    /* filter: blur(2px);  */
+   
     overflow-y: scroll;
 }
 
+
 .navbar {
+
     display: flex;
     /* position: fixed; */
     flex-direction: row;
     /* background-color: #181818; */
-    background: #000000; /* fallback for old browsers */
-    background: -webkit-linear-gradient(to top, #000000, #84e684); /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #000000, #84e684);
+    /* background: #000000; /* fallback for old browsers 
+    background: -webkit-linear-gradient(to top, #000000, #84e684);
+    background: linear-gradient(to right, #000000, #84e684); */
     height:100px;
     width: 100%;
     z-index: 100;
@@ -46,7 +52,7 @@ a {
 .col{
     display: flex;
     flex-direction: column;
-    height:90%;
+    height:85%;
     width: 20%;
     padding-left: 0%;
     padding-top: 2%;
@@ -60,6 +66,15 @@ a {
  
     /* padding-top: 10px; */
 
+}
+.product{
+    display: flex;
+    flex-direction: row;
+    height:85%;
+    width: 90%;
+    margin-top:10%;
+    margin-left: 5%;
+    overflow-y:scroll ;
 }
 .filter{
     display: flex;
