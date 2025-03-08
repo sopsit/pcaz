@@ -19,5 +19,6 @@ func SetupRoutes(router *gin.Engine) {
     {
         api.POST("api/login", handlers.LoginHandler)
         api.POST("api/SazgarYab", handlers.Product)
+        api.POST("api/getSazgarProduct", handlers.GetCompatibleProducts)
     }
 }

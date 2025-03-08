@@ -67,7 +67,7 @@ import (
         configdb.Connect_db()
         
         address, err := repositories.Getaddress(userId)
-        fmt.Println("in service: ", address)
+        // fmt.Println("in service: ", address)
         if len(address) == 0 {
             address = append(address, "No addres avalable")
         }
@@ -81,7 +81,7 @@ import (
         configdb.Connect_db()
         
         dif_count, err := repositories.GetCountofDiscountCodeFromReferralSystem(userId)
-        fmt.Println("in service: ", dif_count)
+        // fmt.Println("in service: ", dif_count)
 
         if err != nil  {
             return dif_count, errors.New("invalid credentials") 
@@ -137,6 +137,29 @@ import (
 
         return product, nil
     }
+    func  Compatible(list []structure.Info) ([]int , error) {
+        configdb.Connect_db()
+
+        productid, err := repositories.Compatible(list)
+          fmt.Println("in service4: ", productid)
+        if err != nil  {
+            fmt.Println("Error in GetCartInformation:", err) 
+            return productid, errors.New("invalid credentials") 
+        }
+
+        return productid, nil
+    }
+    
+    func Getcomatbleproducts(p_list []int) ([]structure.Product ) {
+        configdb.Connect_db()
+
+        product := repositories.Getcomatbleproducts(p_list)
+          fmt.Println("in service5: ", product)
+          
+        return product
+    }
+
+
 
     
 

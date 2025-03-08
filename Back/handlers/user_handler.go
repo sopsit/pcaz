@@ -71,6 +71,31 @@ func Product(c *gin.Context){
 }
 
 
+// Endpoint for getting compatible products
+func GetCompatibleProducts(c *gin.Context) {
+    var request []structure.Info
+    if err := c.BindJSON(&request); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input"})
+        return
+    }
+
+    compatibleProductIds, err := services.Compatible(request)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"message": "Error fetching compatible products"})
+        return
+    }
+
+    // Fetch the compatible products from the database using the product IDs
+    compatibleProducts := services.Getcomatbleproducts(compatibleProductIds)
+
+    // Return the compatible products
+    c.JSON(http.StatusOK, gin.H{
+        "message": "successful",
+        "product": compatibleProducts,  // Return the list of compatible products
+    })
+}
+
+
 
 
 

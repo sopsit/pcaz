@@ -79,7 +79,7 @@ a {
 .filter{
     display: flex;
     flex-direction: column;
-    height:90%;
+    height:85%;
     width: 20%;
     padding-left: 0%;
     padding-top: 2%;
@@ -152,6 +152,5 @@ label {
     margin-top: 5%;
     margin-left : 15%;
     margin-bottom: 2%;
-
     border-radius: 10px;
 }

@@ -47,9 +47,9 @@ type History struct {
 }
 
 type Info struct {
-	ProductBrand string
-	ProductModel string
-	ProductCategory string
+	ProductBrand string			`json:"ProductBrand"`
+	ProductModel string			`json:"ProductModel"`
+	ProductCategory string		`json:"ProductCategory"`
 }
 
 type Product struct {
@@ -60,4 +60,6 @@ type Product struct {
 	P_brand string				`json:"P_brand"`
 	P_model string				`json:"P_model"`
 }
+
+
 
