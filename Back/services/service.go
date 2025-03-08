@@ -125,6 +125,7 @@ import (
         
         return disCode, nil
     }
+
     func Get_Procuctsfunc() ([]structure.Product , error){
 
         configdb.Connect_db()
@@ -137,11 +138,13 @@ import (
 
         return product, nil
     }
+
+
     func  Compatible(list []structure.Info) ([]int , error) {
         configdb.Connect_db()
 
         productid, err := repositories.Compatible(list)
-          fmt.Println("in service4: ", productid)
+          fmt.Println("in service6: ", productid)
         if err != nil  {
             fmt.Println("Error in GetCartInformation:", err) 
             return productid, errors.New("invalid credentials") 

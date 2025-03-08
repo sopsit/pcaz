@@ -312,34 +312,21 @@
                     console.error("Error parsing cart data:", error);
                 }
             }
+            if (storDis) {
 
-            // if (storDis) {
-            //         const disCode = JSON.parse(storDis);
-            //         const selectElement = document.getElementById("dis_container");
+                const disCode = JSON.parse(storDis);
+                const selectElement = document.getElementById("dis_container");
+                console.log("what ", storDis)
+                selectElement.innerHTML = ""; // Clear existing options
+
+                disCode.forEach(discountCode => {
+                    const codeElement = document.createElement("p");
                     
-            //         selectElement.innerHTML = ""; // Clear existing options
-            //         disCode.forEach(DiscountCode => {
-            //             const codes = document.createElement("p");
-            //             codes.textContent = DiscountCode;
-            //             selectElement.appendChild(codes);
-            //         });
-            //     }
-
-                if (storDis) {
-
-                    const disCode = JSON.parse(storDis);
-                    const selectElement = document.getElementById("dis_container");
-                    console.log("what ", storDis)
-                    selectElement.innerHTML = ""; // Clear existing options
-
-                    disCode.forEach(discountCode => {
-                        const codeElement = document.createElement("p");
-                        
-                        codeElement.textContent = `Code: ${discountCode.Code},  Amount: ${discountCode.CodeAmount},  Limit: ${discountCode.Cartnum},  UseCount: ${discountCode.UseCount},  CTime: ${discountCode.CTime},   Expiration Date: ${discountCode.ExpirationDate}`;
-                        selectElement.appendChild(codeElement);
-                    });
-                    console.log(discountCode.Code)
-                }
+                    codeElement.textContent = `Code: ${discountCode.Code},  Amount: ${discountCode.CodeAmount},  Limit: ${discountCode.Cartnum},  UseCount: ${discountCode.UseCount},  CTime: ${discountCode.CTime},   Expiration Date: ${discountCode.ExpirationDate}`;
+                    selectElement.appendChild(codeElement);
+                });
+                console.log(discountCode.Code)
+            }
             }
         };
 

@@ -15,7 +15,7 @@ import (
 	"myproject/services"
 	"myproject/structure"
 	// "log"
-	"fmt"
+	// "fmt"
 )
 
 
@@ -58,10 +58,12 @@ func LoginHandler(c *gin.Context) {
 	dif_count := strconv.Itoa(diff_count)
     c.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user, "status" : status, "count_ref" : count_ref, "remaining" : remaining, "fiftyPer" : fiftyPer, "addresses" : addresses, "dif_count" : dif_count, "cart" :cart, "cartInfo" :cartInfo, "disCode" : disCode})
 }
+
+
 func Product(c *gin.Context){
 
 	product, err := services.Get_Procuctsfunc()
-	 fmt.Println("handler pro:", product)
+	//  fmt.Println("handler pro:", product)
 
 	if   err != nil  {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
@@ -71,9 +73,10 @@ func Product(c *gin.Context){
 }
 
 
-// Endpoint for getting compatible products
 func GetCompatibleProducts(c *gin.Context) {
+
     var request []structure.Info
+	
     if err := c.BindJSON(&request); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input"})
         return

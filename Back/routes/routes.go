@@ -14,11 +14,11 @@ import (
 
 // }
 func SetupRoutes(router *gin.Engine) {
-
     api := router.Group("/api")
     {
-        api.POST("api/login", handlers.LoginHandler)
-        api.POST("api/SazgarYab", handlers.Product)
-        api.POST("api/getSazgarProduct", handlers.GetCompatibleProducts)
+        api.POST("/login", handlers.LoginHandler)
+        api.POST("/SazgarYab", handlers.Product)
+        api.POST("/getSazgarProduct", handlers.GetCompatibleProducts) 
     }
 }
+

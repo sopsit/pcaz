@@ -31,7 +31,7 @@
                 <div class="row txt" style="position: absolute; left:420px; font-size: 1.5rem;">
                     کالا های سازگار
                 </div>
-                <div class="product" id="SproductList">
+                <div class="product txt" id="SproductList" style="text-align: left;">
                     
                 </div>
             </div>
@@ -49,17 +49,13 @@
             </div>
             <div class="filter">
                 <div class="row"  >
-                    <div class="txt" style="position: absolute; left:1400px; font-size: 2rem;">
-                        فیلتر
+                    <div class="txt" style="position: absolute; left:1300px; font-size: 1.5rem;">
+                        فیلتر نتایج سازگاریاب
                     </div>
                 </div>
-                <div class="row">
-                    <div class="txt" style="position: absolute; left:1320px;">
-                        دسته بندی کالا ها
-                    </div>
-                </div>
-                <div class="row" >
-                    <div class="col txt" style="width: 100%; height: 100%;  ">
+              
+             
+                    <div class="col txt" style="width: 100%; height: 79%;  ">
 
                         <label class="option" >
                             <input type="checkbox">
@@ -106,10 +102,13 @@
                             <span class="checkbox-custom"></span>
                             Cooler
                         </label>
-                        <button class="box txt">
-                            اعمال
-                        </button>
                     </div>
+              
+                <div class="row" style="width: 100%;">
+
+                    <button class="box txt">
+                        اعمال
+                    </button>
                 </div>
             </div>
           </div>
@@ -117,7 +116,7 @@
     <script>
 
 
-         function loadProducts() {
+        function loadProducts() {
             fetch("http://localhost:8080/api/SazgarYab", {
                 method: "POST",
                 headers: {
@@ -135,7 +134,7 @@
             })
             .catch(error => console.error("Error:", error));
 
-            function displayProducts(products) {
+        function displayProducts(products) {
             const productList = document.getElementById("productList");
             productList.innerHTML = ""; // Clear previous content
 
@@ -148,6 +147,10 @@
                 checkbox.name = "product";
                 checkbox.value = product.P_model;
                 checkbox.id = "product" + index; // Ensure unique ID
+                checkbox.dataset.brand = product.P_brand;
+                checkbox.dataset.model = product.P_model;
+                checkbox.dataset.category = product.P_category;
+                checkbox.dataset.price = product.P_currentprice;
 
                 const customCheckbox = document.createElement("div");
                 customCheckbox.classList.add("checkbox-custom");
@@ -173,7 +176,7 @@
         // Get all selected checkboxes
         const selectedProducts = [];
         const checkboxes = document.querySelectorAll('input[name="product"]:checked');
-
+            
         // Loop through checked checkboxes and gather their data
         checkboxes.forEach(checkbox => {
             selectedProducts.push({
@@ -181,7 +184,9 @@
                 ProductModel: checkbox.dataset.model, 
                 ProductCategory: checkbox.dataset.category 
             });
+            // console.log("chera:  ",checkbox.dataset.brand)
         });
+        // console.log("pr: ",selectedProducts )
 
         // no product is selected
         if (selectedProducts.length === 0) {
@@ -195,13 +200,15 @@
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ list: selectedProducts })  
+            body: JSON.stringify(selectedProducts)  
+  
         })
         .then(response => response.json())
         .then(data => {
             if (data.message === "successful") {
                 // Handle the response (the compatible products)
                 displayProducts(data.product);  // Assuming the response includes the compatible products
+                console.log("saz: ", selectedProducts)
             } else {
                 alert("Error fetching compatible products");
             }
@@ -226,8 +233,6 @@
         }
 
         window.onload = loadProducts();
-
-
 
 
     </script>

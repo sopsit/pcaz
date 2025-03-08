@@ -14,29 +14,6 @@ import (
     "myproject/handlers"
 )
 
-//var db *sql.DB 
-
-// func main() {
-// // return db , err
-//     configdb.Connect_db()
-// 	// routes.SetupRoutes()
-// 	// handler := middlewares.CORS(http.DefaultServeMux)
-// 	// log.Println("Server started on :8080")
-// 	// log.Fatal(http.ListenAndServe(":8080", handler))
-
-// 	router := gin.Default()
-
-//     // Apply middlewares (CORS, authentication, etc.)
-//     router.Use(middlewares.CORS())
-
-//     // Set up routes
-//     routes.SetupRoutes(router)
-
-//     // Start the server
-//     router.Run(":8080")
-// }
-
-
 func main() {
     router := gin.Default()
     
@@ -51,6 +28,7 @@ func main() {
     {
         api.POST("/login", handlers.LoginHandler)
         api.POST("/SazgarYab", handlers.Product)
+        api.POST("/getSazgarProduct", handlers.GetCompatibleProducts)
     }
 
     router.Run(":8080")
