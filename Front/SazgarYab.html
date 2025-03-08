@@ -58,47 +58,47 @@
                     <div class="col txt" style="width: 100%; height: 79%;  ">
 
                         <label class="option" >
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="Case">
                             <span class="checkbox-custom"></span>
                             Case
                         </label>
                         <label class="option">
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="HDD">
                             <span class="checkbox-custom"></span>
                             HDD
                         </label>
                         <label class="option">
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="Power">
                             <span class="checkbox-custom"></span>
                             Power supply
                         </label>
                         <label class="option">
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="GPU">
                             <span class="checkbox-custom"></span>
                             GPU
                         </label>
                         <label class="option">
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="SSD">
                             <span class="checkbox-custom"></span>
                             SSD
                         </label>
                         <label class="option">
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="Ram">
                             <span class="checkbox-custom"></span>
                             RAM Stick
                         </label>
                         <label class="option">
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="Mother">
                             <span class="checkbox-custom"></span>
                             Mother board
                         </label>
                         <label class="option">
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="CPU">
                             <span class="checkbox-custom"></span>
                             CPU
                         </label>
                         <label class="option">
-                            <input type="radio" name="component">
+                            <input type="radio" name="component" value="cooler">
                             <span class="checkbox-custom"></span>
                             Cooler
                         </label>
@@ -116,8 +116,36 @@
     <script>
 
         function filter() {
+            // Get selected radio button
+            const radio = document.querySelector('input[name="component"]:checked');
+            if (!radio) {
+                alert("Please select a category first.");
+                return;
+            }
 
+            // Get selected category
+            const selectedCategory = radio.value;
+
+            // Get product list container
+            const productList = document.getElementById("SproductList");
+            if (!productList || productList.children.length === 0) {
+                alert("No products found. Please fetch products first.");
+                return;
+            }
+
+            // Loop through products and filter based on category
+            Array.from(productList.children).forEach(productElement => {
+                const productCategory = productElement.dataset.category;
+                
+                // Show only products that match the selected category
+                if (productCategory === selectedCategory) {
+                    productElement.style.display = "block";
+                } else {
+                    productElement.style.display = "none";
+                }
+            });
         }
+
         function loadProducts() {
             fetch("http://localhost:8080/api/SazgarYab", {
                 method: "POST",
@@ -209,30 +237,34 @@
         .then(data => {
             if (data.message === "successful") {
                 // Handle the response (the compatible products)
-                displayProducts(data.product);  // Assuming the response includes the compatible products
-                console.log("saz: ", selectedProducts)
+                displayProducts(data.product); 
             } else {
                 alert("Error fetching compatible products");
             }
         })
         .catch(error => console.error("Error:", error));
     }
-
+    
     // Display the compatible products
+
         function displayProducts(products) {
-            
             const productList = document.getElementById("SproductList");
             productList.innerHTML = ""; 
+
             products.forEach((product) => {
                 const productElement = document.createElement("div");
                 productElement.classList.add("product-item");
+                productElement.dataset.category = product.P_category; // Add category for filtering
+
                 productElement.innerHTML = `
-                    <p>${product.P_brand} - ${product.P_model} (${product.P_currentprice})</p>
+                    <p>${product.P_brand} - ${product.P_model} ($${product.P_currentprice})</p>
                     <p>Stock Count: ${product.P_Stock_count}</p>
                 `;
+
                 productList.appendChild(productElement);
             });
-        }
+}
+
 
         window.onload = loadProducts();
 
