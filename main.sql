@@ -107,8 +107,15 @@ CREATE TABLE Public_Code
               
 CREATE TABLE  Product 
               ( id         			INT            PRIMARY KEY   AUTO_INCREMENT , 
-                Category  			VARCHAR(20)     NOT NULL   ,
-                Image     			BLOB ,
+                Category  			ENUM ( 'Case' ,
+                                           'HDD',
+                                           'Power Supply',
+                                           'GPU',
+                                           'SSD',
+                                           'RAM',
+                                           'Motherboard',
+                                           'CPU' ,
+										   'Cooler' )     NOT NULL ,
                 Current_price   	FLOAT8       NOT NULL    CHECK ( Current_price > 0 ) ,
                 Stock_count     	INT      NOT NULL    CHECK(Stock_count >= 0 ) ,
                 Brand           	VARCHAR(30)    NOT NULL  ,
@@ -306,7 +313,6 @@ ELSEIF (current_amount > 100) THEN
 END IF;
 END LOOP;
 CLOSE L_code;
-
 IF temp_price < 0 THEN 
 SET total_price = 0 ;
 ELSE 
@@ -329,76 +335,6 @@ BEGIN
           VALUES ( new_code , client_id );
 
 END; //
-
-CREATE PROCEDURE add_15percent_of_vip_clients () 
-BEGIN
-     DECLARE VIP_client_id INT;
-     DECLARE cur_cart_number INT;
-     DECLARE cur_locked_cart_number INT;
-     DECLARE Price  FLOAT8 ;
-     DECLARE done BOOLEAN DEFAULT FALSE;
-	 DECLARE cart_list CURSOR FOR SELECT  I.id ,  I.Cart_number ,  I.Locked_number 
-     FROM VIP_Clients VIP , Issued_For I , Transactions T 
-     WHERE VIP.id=I.id AND I.Tracking_code = T.Tracking_code AND T.T_Status='Successful' AND
-     T.Transactions_time >= DATE_SUB( NOW() , INTERVAL 1 MONTH ) AND T.Transactions_time <= NOW()
-	 AND VIP.Subscription_expiration_time >= NOW();
-     
-     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-     
-     OPEN cart_list;
-    cart_loop : LOOP
-	FETCH NEXT FROM cart_list INTO VIP_client_id , cur_cart_number , cur_locked_cart_number ;
-	IF done THEN LEAVE cart_loop;
-    END IF;   
-       
-       CALL calculate_price( VIP_client_id , cur_cart_number , cur_locked_cart_number , price );
-       
-       UPDATE clients 
-       SET    Wallet_balance = Wallet_balance + ( price * 0.15 )
-       WHERE  id=VIP_client_id;
-	
-    END LOOP;
-    CLOSE cart_list;
-    
-END; //
-
-CREATE PROCEDURE restore_products_and_block_carts() 
-BEGIN
-
-       DECLARE client_id INT;
-       DECLARE c_num INT;
-       DECLARE c_locked_num INT;
-       DECLARE p_id INT;
-       DECLARE product_quantity INT;
-       DECLARE done BOOLEAN DEFAULT FALSE;
-       DECLARE product_cart_list CURSOR FOR SELECT  A.id , A.Cart_number , A.Locked_number , A.Product_ID , A.Quantity
-		FROM    Added_To A
-		JOIN    Locked_Shopping_Cart L ON  A.id=L.id AND A.Cart_number=L.Cart_Number AND A.Locked_number=L.Locked_Cart_Number
-		JOIN    ( SELECT id , Cart_Number , MAX(Locked_Time) AS Latest_time FROM Locked_Shopping_Cart GROUP BY id , Cart_Number ) AS L_cart 
-				 ON L_cart.id=L.id AND L_cart.Cart_Number = L.Cart_Number AND L_cart.Latest_time= L.Locked_Time
-		JOIN    Shopping_Cart S  ON  L_cart.id=S.id AND  L_cart.id.Cart_Number = S.Cart_Number
-		WHERE   S.Cart_Status = 'locked' AND L.Locked_Time < NOW() - INTERVAL 3 DAY;
-        DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-        
-        
-       OPEN product_cart_list;
-       pc_loop : LOOP
-               FETCH NEXT FROM product_cart_list INTO client_id , c_num , c_locked_num , p_id , product_quantity ;
-               IF done THEN LEAVE pc_loop;
-               END IF;   
-   
-               UPDATE Product 
-               SET    Stock_count = Stock_count + product_quantity
-               WHERE  id = p_id ;
-               
-               UPDATE Shopping_Cart
-               SET    Cart_Status = 'blocked' 
-               WHERE  id=client_id AND Cart_Number = c_num ; 
-
-       END LOOP;
-       CLOSE product_cart_list;
-
-END; // 
 
 CREATE PROCEDURE check_blocking_cart ( new_client_id INT , new_cart_num INT )
 BEGIN
@@ -701,7 +637,33 @@ ON SCHEDULE
 	ON COMPLETION PRESERVE
 DO
 BEGIN
-    CALL add_15percent_of_vip_clients() ;    
+	DECLARE VIP_client_id INT;
+     DECLARE cur_cart_number INT;
+     DECLARE cur_locked_cart_number INT;
+     DECLARE Price  FLOAT8 ;
+     DECLARE done BOOLEAN DEFAULT FALSE;
+	 DECLARE cart_list CURSOR FOR SELECT  I.id ,  I.Cart_number ,  I.Locked_number 
+     FROM VIP_Clients VIP , Issued_For I , Transactions T 
+     WHERE VIP.id=I.id AND I.Tracking_code = T.Tracking_code AND T.T_Status='Successful' AND
+     T.Transactions_time >= DATE_SUB( NOW() , INTERVAL 1 MONTH ) AND T.Transactions_time <= NOW()
+	 AND VIP.Subscription_expiration_time >= NOW();
+     
+     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+     
+     OPEN cart_list;
+    cart_loop : LOOP
+	FETCH NEXT FROM cart_list INTO VIP_client_id , cur_cart_number , cur_locked_cart_number ;
+	IF done THEN LEAVE cart_loop;
+    END IF;   
+       
+       CALL calculate_price( VIP_client_id , cur_cart_number , cur_locked_cart_number , price );
+       
+       UPDATE clients 
+       SET    Wallet_balance = Wallet_balance + ( price * 0.15 )
+       WHERE  id=VIP_client_id;
+	
+    END LOOP;
+    CLOSE cart_list;
 END; //    
 
 
@@ -727,13 +689,44 @@ ON SCHEDULE
 	ON COMPLETION PRESERVE
 DO
 BEGIN
-    CALL restore_products_and_block_carts();
+  
+       DECLARE client_id INT;
+       DECLARE c_num INT;
+       DECLARE c_locked_num INT;
+       DECLARE p_id INT;
+       DECLARE product_quantity INT;
+       DECLARE done BOOLEAN DEFAULT FALSE;
+       DECLARE product_cart_list CURSOR FOR SELECT  A.id , A.Cart_number , A.Locked_number , A.Product_ID , A.Quantity
+		FROM    Added_To A
+		JOIN    Locked_Shopping_Cart L ON  A.id=L.id AND A.Cart_number=L.Cart_Number AND A.Locked_number=L.Locked_Cart_Number
+		JOIN    ( SELECT id , Cart_Number , MAX(Locked_Time) AS Latest_time FROM Locked_Shopping_Cart GROUP BY id , Cart_Number ) AS L_cart 
+				 ON L_cart.id=L.id AND L_cart.Cart_Number = L.Cart_Number AND L_cart.Latest_time= L.Locked_Time
+		JOIN    Shopping_Cart S  ON  L_cart.id=S.id AND  L_cart.Cart_Number = S.Cart_Number
+		WHERE   S.Cart_Status = 'locked' AND L.Locked_Time < NOW() - INTERVAL 3 DAY;
+        
+        
+       OPEN product_cart_list;
+       pc_loop : LOOP
+               FETCH NEXT FROM product_cart_list INTO client_id , c_num , c_locked_num , p_id , product_quantity ;
+               IF done THEN LEAVE pc_loop;
+               END IF;   
+   
+               UPDATE Product 
+               SET    Stock_count = Stock_count + product_quantity
+               WHERE  id = p_id ;
+               
+                UPDATE Shopping_Cart
+               SET    Cart_Status = 'blocked' 
+               WHERE  id=client_id AND Cart_Number = c_num ; 
+
+       END LOOP;
+       CLOSE product_cart_list;
 END; //    
 
 CREATE EVENT unlock_after_7days
 ON SCHEDULE
-	EVERY 1 DAY STARTS
-	CURRENT_DATE + INTERVAL 1 DAY
+	EVERY 2 DAY STARTS
+	CURRENT_DATE + INTERVAL 2 DAY
 	ON COMPLETION PRESERVE
 DO
 BEGIN

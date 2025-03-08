@@ -39,7 +39,7 @@ func LoginHandler(c *gin.Context) {
 	addresses, _ := services.Get_address(user.Cid) 
 	diff_count, _ := services.Get_CountofDiscountCodeFromReferralSystem(user.Cid)
 	fmt.Println(" diff_count:", diff_count)
-    if uerr != nil || err1 != nil ||err2 != nil {
+    if  err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
     }
