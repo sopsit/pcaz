@@ -147,6 +147,13 @@
         }
 
         function loadProducts() {
+            const storestatus = localStorage.getItem("status")
+            if(storestatus) {
+                if (storestatus =='CIP') {
+                    alert("It's for VIP users")
+                    window.history.back();
+                }
+            }
             fetch("http://localhost:8080/api/SazgarYab", {
                 method: "POST",
                 headers: {
