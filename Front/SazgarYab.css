@@ -69,7 +69,7 @@ a {
 }
 .product{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     height:85%;
     width: 90%;
     margin-top:10%;
@@ -109,7 +109,7 @@ a {
     width: 18px;
     height: 18px;
     border: 2px solid #7ada8a;
-    border-radius: 4px;
+    border-radius:50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -118,12 +118,14 @@ a {
     transition: 0.2s;
 }
 
-.option input:checked + .checkbox-custom {
+.option input:checked + .checkbox-custom,
+.checkbox-custom.checked {
     background-color: #84df7d;
     border-color: #308140;
 }
 
-.option input:checked + .checkbox-custom::after {
+.option input:checked + .checkbox-custom::after,
+.checkbox-custom.checked::after {
     content: "✔";
     color: white;
     font-size: 14px;
@@ -132,11 +134,24 @@ a {
 label {
     cursor: pointer;
 }
+
 .box {
     margin-top: 10px;
     background-color:#6cbd66 ;
     text-align: center;
     width: 80%;
     margin-left: 15%;
+    border-radius: 10px;
+}
+.choosenBox {
+    margin-top: 10px;
+    background-color:#6cbd66 ;
+    text-align: center;
+    width: 70%;
+    height: 9%;
+    margin-top: 5%;
+    margin-left : 15%;
+    margin-bottom: 2%;
+
     border-radius: 10px;
 }

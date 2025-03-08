@@ -431,6 +431,7 @@ func GetProcucts() ([]structure.Product , error) {
 
 }
 
+
 func Getproductfromid(pid int)(structure.Product , error){
 
 	Database := configdb.Get_database()

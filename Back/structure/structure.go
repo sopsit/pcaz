@@ -54,9 +54,10 @@ type Info struct {
 
 type Product struct {
 
-	P_category string
-	P_currentprice float64
-	P_Stock_count int
-	P_brand string
-	P_model string
+	P_category string			`json:"P_category"`
+	P_currentprice float64		`json:"P_currentprice"`
+	P_Stock_count int			`json:"P_Stock_count"`
+	P_brand string				`json:"P_brand"`
+	P_model string				`json:"P_model"`
 }
+

@@ -125,6 +125,20 @@ import (
 
         return disCode, nil
     }
+    func Get_Procuctsfunc() ([]structure.Product , error){
+
+        configdb.Connect_db()
+        product, err := repositories.GetProcucts()
+          fmt.Println("in service4: ", product)
+        if err != nil  {
+            fmt.Println("Error in GetCartInformation:", err) 
+            return product, errors.New("invalid credentials") 
+        }
+
+        return product, nil
+    }
+
+    
 
     
 

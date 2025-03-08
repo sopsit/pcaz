@@ -50,8 +50,7 @@ func main() {
     api := router.Group("/api")
     {
         api.POST("/login", handlers.LoginHandler)
-        api.POST("/profile", handlers.ProfileHandler)
-        // Add more routes here
+        api.POST("/SazgarYab", handlers.Product)
     }
 
     router.Run(":8080")
