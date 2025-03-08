@@ -482,7 +482,7 @@ func intersect(cmap map[int]int , cslise []int , err error) (map[int]int){
 
 
 
-func Compatible(list []structure.Info) ([]int , error) {
+func Compatible(list []structure.Info) ([]int , error) { // intersect with same category 
     
 	comatiblelist := make(map[string]map[int]int)
 	comatiblelist["POWERSUPPLY"]= make(map[int]int)
