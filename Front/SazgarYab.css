@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap');
+
+
 body {
     margin: 0;
     padding: 0 ;
@@ -13,10 +16,11 @@ a {
   }
   .background {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     background-color: #0f0f0f;
     width: 100vw;
     height: 100vh;
+    overflow-y: scroll;
 }
 
 .navbar {
@@ -27,7 +31,7 @@ a {
     background: #000000; /* fallback for old browsers */
     background: -webkit-linear-gradient(to top, #000000, #84e684); /* Chrome 10-25, Safari 5.1-6 */
     background: linear-gradient(to right, #000000, #84e684);
-    height:90px;
+    height:100px;
     width: 100%;
     z-index: 100;
   
@@ -42,8 +46,82 @@ a {
 .col{
     display: flex;
     flex-direction: column;
-    height:80%;
+    height:90%;
     width: 20%;
     padding-left: 0%;
     padding-top: 2%;
+    margin: 1%;
+}
+.row{
+    display: flex;
+    flex-direction: row;
+    height:10%;
+    width: 90%;
+ 
+    /* padding-top: 10px; */
+
+}
+.filter{
+    display: flex;
+    flex-direction: column;
+    height:90%;
+    width: 20%;
+    padding-left: 0%;
+    padding-top: 2%;
+    margin: 1%;
+    background-color: #181818;
+    border-radius: 10px;
+}
+.down_row {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+    margin-top: 3%
+}
+.option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.option input {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #7ada8a;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    margin-left: 10px;
+    transition: 0.2s;
+}
+
+.option input:checked + .checkbox-custom {
+    background-color: #84df7d;
+    border-color: #308140;
+}
+
+.option input:checked + .checkbox-custom::after {
+    content: "✔";
+    color: white;
+    font-size: 14px;
+}
+
+label {
+    cursor: pointer;
+}
+.box {
+    margin-top: 10px;
+    background-color:#6cbd66 ;
+    text-align: center;
+    width: 80%;
+    margin-left: 15%;
+    border-radius: 10px;
 }
