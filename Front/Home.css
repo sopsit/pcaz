@@ -200,8 +200,9 @@ footer {
     margin-bottom: 1%;
     margin-top: 1%;
     border-radius: 10px;
-    background: #000000; /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #000000, #84e684); /* Chrome 10-25, Safari 5.1-6 */
+   
+    background: #000000; 
+    background: -webkit-linear-gradient(to right, #000000, #84e684);
     background: linear-gradient(to right, #000000, #84e684)
 }
 .line{

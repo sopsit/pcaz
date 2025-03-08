@@ -122,17 +122,16 @@
                 alert("Please select a category first.");
                 return;
             }
-
             // Get selected category
             const selectedCategory = radio.value;
-
+            
             // Get product list container
             const productList = document.getElementById("SproductList");
             if (!productList || productList.children.length === 0) {
                 alert("No products found. Please fetch products first.");
                 return;
             }
-
+            
             // Loop through products and filter based on category
             Array.from(productList.children).forEach(productElement => {
                 const productCategory = productElement.dataset.category;
