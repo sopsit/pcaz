@@ -2,13 +2,13 @@ USE pcaz;
 
 INSERT INTO clients (Phone_number, First_name, Last_name, Wallet_balance, Referral_code)
 VALUES 
-('09183456789', 'John', 'Smith', 1000000000 , 'JOHNDOE123'),
+('09183456789', 'John', 'Smith', 1500000000 , 'JOHNDOE123'),
 ('09183455290', 'Mamad', 'Slv', 5000000, 'MAMADSLV456'),
 ('09123459587', 'Ema', 'Doe', 750000, 'EMAD789');
 
 INSERT INTO address (id, Province, Remainder)
 VALUES 
--- (1, 'Tehran', '123 miad Street'),
+(1, 'Tehran', '123 miad Street'),
 (2, 'Hamedan', 'Ostadan Street'),
 (3, 'Zanjan', '789 Mehrane Street'),
 (3 , 'Zanjan' , '790 Mehrane Street') ;
@@ -18,24 +18,28 @@ VALUES
 (2 , 1),
 (3 , 2);
 
-INSERT INTO Locked_Shopping_Cart (id, Cart_Number, Locked_Cart_Number)
-VALUES 
-(1, 1, 1),
-(2, 1, 2),
-(3, 1, 3);
 
-INSERT INTO Transactions (Tracking_code)
+INSERT INTO Transactions (Tracking_code , Transactions_time)
 VALUES 
-('TR1234567'),
-('TR9876543'),
-('TR1231231');
+('TR1234567' , '2024-01-01 23:59:59'),
+('TR9876543', NOW()),
+('Transaction3' , NOW()),
+('TR1231231' , NOW());
 
 INSERT INTO Subscribes (Tracking_code, id)
 VALUES 
 ('TR9876543', 1);
 
+INSERT INTO Locked_Shopping_Cart (id, Cart_Number, Locked_Cart_Number , Locked_Time)
+VALUES 
+(1, 1, 1 , NOW()),
+(2, 1, 2 ,'2025-01-01 23:59:59' ),
+(3, 1, 3 , NOW()),
+(1 , 2 , 4 , NOW());
+
 INSERT INTO Bank_Transactions (Tracking_code, Card_number)
 VALUES 
+('Transaction3' , '123') ,
 ('TR1231231', '585980123456');
 
 INSERT INTO Wallet_Transactions (Tracking_code)
@@ -51,7 +55,8 @@ VALUES
 
 INSERT INTO Discount_Code (Amount, Dis_Limit, Usage_count, Expiration_date)
 VALUES 
-(20.0, 200.0, 2 , '2025-11-30 23:59:59');
+(200.0, 200.0, 2 , '2025-11-30 23:59:59');
+
 
 INSERT INTO Public_Code (Public_DCode)
 VALUES 
@@ -68,22 +73,27 @@ VALUES
 ('RAM', 70000 , 25, 'Corsair', 'Vengeance LPX'),
 ('Motherboard', 150000 , 12, 'ASUS', 'ROG Strix Z590-E'),
 ('CPU', 1000000, 89 , 'Intel', 'Core i7'),
-('Cooler', 125000 , 18, 'Cooler Master', 'Hyper 212');
+('Cooler', 125000 , 18, 'Cooler Master', 'Hyper 212'),
+('CPU' , 1200 , 20 , 'brand1' , 'model1');
 
 
 INSERT INTO Added_To (id, Cart_number, Locked_number, Product_ID, Quantity, Cart_price)
 VALUES 
 (1, 1, 1, 1, 2 , 100000),
 (1 , 1, 1, 2, 1 , 80000 ),
+(1 , 2 , 4 , 5 , 10 , 200 ) ,
 (2 , 1, 2 , 3 , 1 , 10000 );
-
-INSERT INTO Applied_To (id, Cart_number, Locked_number, ACode)
+INSERT INTO Applied_To (id, Cart_number, Locked_number, ACode , Apply_Time)
 VALUES 
-(1, 1, 1, 2);
+  (1, 2 , 4 , 2 , NOW()) ,
+ (1 ,1 , 1 , 5 ,  NOW() - interval 1 DAY) ;
+ -- (1,1,1,6, '2024-02-05 23:59:59') ;
 
 INSERT INTO Issued_For (Tracking_code, id, Cart_number, Locked_number)
 VALUES 
+('Transaction3' , 1 , 2 , 4 ) ,
 ('TR1234567', 1, 1, 1);
+
 
 
 INSERT INTO Case_p (id, Number_of_fans, Fan_size, Wattage, CASE_Type, Material, Color, Height, Width, Depth)
@@ -116,7 +126,8 @@ VALUES
 
 INSERT INTO CPU_P (id, Maximum_addressable_memory_limit, Boost_frequency, Base_frequency, Number_of_cores, Number_of_Threads, Wattage, Generation, Microarchitecture)
 VALUES 
-(8, 128, 5000, 3600, 8, 16, 125, '11th Gen', 14);
+(8, 128, 5000, 3600, 8, 16, 125, '11th', 14) ,
+(10 , 128 , 5000 , 12 , 4 , 8 ,11 , '11th', 15 );
 
 INSERT INTO COOLER (id, Maximum_rotational_speed, Fan_size, Height, Width, Wattage, Cooling_method, Depth)
 VALUES 
@@ -128,7 +139,7 @@ VALUES
 
 INSERT INTO MC_SOCKET_COMPATIBLE_WITH (CPU_ID, Motherboard_ID)
 VALUES 
-(8, 7);
+(10 , 7);
 
 INSERT INTO RM_SLOT_COMPATIBLE_WITH (Ram_ID, Motherboard_ID)
 VALUES 

@@ -42,7 +42,7 @@ func LoginHandler(c *gin.Context) {
 	cartInfo, _ :=services.Get_CartInformation(user.Cid)
 	disCode, _ := services.Get_PrivateDiscountCode(user.Cid)
 	// fmt.Println("handler discode:", disCode)
-    if uerr != nil || err1 != nil ||err2 != nil {
+    if   err1 != nil ||err2 != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
         return
     }
