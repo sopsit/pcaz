@@ -117,12 +117,12 @@ import (
         configdb.Connect_db()
         
         disCode, err := repositories.GetPrivateDiscountCode(userID)
-        //  fmt.Println("in service3: ", disCode)
+        // fmt.Println("in service3: ", userID)
         if err != nil  {
             fmt.Println("Error in GetCartInformation:", err) 
             return disCode, errors.New("invalid credentials") 
         }
-
+        
         return disCode, nil
     }
     func Get_Procuctsfunc() ([]structure.Product , error){

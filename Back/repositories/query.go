@@ -161,7 +161,7 @@ func GetPrivateDiscountCode(userID int) ([]structure.DiscountCode, error) {
 		}
 		privateCodeList = append(privateCodeList, discode)
 	}
-
+	// fmt.Println("query : ", privateCodeList)
 	if len(privateCodeList) == 0 {
 		return nil, errors.New(" No PrivateDiscountCode found. ")
 	}
