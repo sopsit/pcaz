@@ -21,7 +21,7 @@ CREATE TABLE address
 
 CREATE TABLE VIP_Clients
 			( id        INT           PRIMARY KEY ,
-              Subscription_expiration_time    DATETIME      NOT NULL  DEFAULT (CURRENT_TIMESTAMP + INTERVAL 1 MONTH)  ,
+              Subscription_expiration_time    DATETIME      NOT NULL  DEFAULT ((CURRENT_TIMESTAMP + INTERVAL 1 MONTH) -1)  ,
               FOREIGN KEY(id)	REFERENCES clients(id)	ON UPDATE CASCADE	ON DELETE CASCADE  );
 
 CREATE TABLE refers 
@@ -622,9 +622,6 @@ BEGIN
 
 END; //
 
-
-
-        
 
 -- ------------------------ EVENT --------------------------
 
